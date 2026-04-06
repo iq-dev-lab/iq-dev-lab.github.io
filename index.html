@@ -10,21 +10,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <style>
     :root {
-      --bg: #07090f;
-      --surface: #0c1120;
-      --java: #F59E0B;
-      --spring: #22C55E;
-      --database: #3B82F6;
-      --messaging: #F97316;
-      --infra: #A78BFA;
-      --center: #CBD5E1;
-      --text: #e2e8f0;
-      --muted: #4A5568;
+      --bg: #07090f; --surface: #0c1120;
+      --java: #F59E0B; --spring: #22C55E; --database: #3B82F6;
+      --messaging: #F97316; --infra: #A78BFA; --center: #CBD5E1; --muted: #4A5568;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: 'Noto Sans KR', sans-serif; }
-
     #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
     header {
@@ -32,90 +23,42 @@
       padding: 16px 36px; display: flex; align-items: center; gap: 18px;
       background: linear-gradient(180deg, rgba(7,9,15,0.94) 60%, transparent 100%);
     }
-
-    .brand-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 42px;
-      letter-spacing: 6px; color: var(--center); line-height: 1;
-    }
-
-    .brand-iq {
-      font-family: 'JetBrains Mono', monospace; font-size: 10px;
-      color: var(--muted); letter-spacing: 2px; margin-top: 2px;
-    }
-
+    .brand-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 6px; color: var(--center); line-height: 1; }
+    .brand-iq { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-top: 2px; }
     .h-sep { width: 1px; height: 34px; background: rgba(255,255,255,0.06); }
-
-    .h-desc {
-      font-size: 12px; color: var(--muted); line-height: 1.7; font-weight: 300;
-    }
+    .h-desc { font-size: 12px; color: var(--muted); line-height: 1.7; font-weight: 300; }
     .h-desc em { color: var(--center); font-style: normal; font-weight: 400; }
-
     .h-stats { margin-left: auto; display: flex; gap: 24px; }
-
-    .stat-n {
-      font-family: 'Bebas Neue', sans-serif; font-size: 28px;
-      letter-spacing: 2px; color: var(--center); line-height: 1; text-align: center;
-    }
-    .stat-l {
-      font-family: 'JetBrains Mono', monospace; font-size: 9px;
-      color: var(--muted); letter-spacing: 1px; text-align: center;
-    }
+    .stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--center); line-height: 1; text-align: center; }
+    .stat-l { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; text-align: center; }
 
     #gw { position: fixed; inset: 0; z-index: 1; }
     #graph { width: 100%; height: 100%; cursor: grab; }
     #graph:active { cursor: grabbing; }
 
-    #legend {
-      position: fixed; bottom: 26px; left: 36px; z-index: 20;
-      display: flex; flex-direction: column; gap: 6px;
-    }
-    .li {
-      display: flex; align-items: center; gap: 8px;
-      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
-    }
+    #legend { position: fixed; bottom: 26px; left: 36px; z-index: 20; display: flex; flex-direction: column; gap: 6px; }
+    .li { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
     .ld { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    #hint { position: fixed; bottom: 26px; right: 36px; z-index: 20; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); text-align: right; line-height: 1.9; }
 
-    #hint {
-      position: fixed; bottom: 26px; right: 36px; z-index: 20;
-      font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
-      color: var(--muted); text-align: right; line-height: 1.9;
-    }
-
-    #tt {
-      position: fixed; z-index: 50; pointer-events: none; opacity: 0;
-      transition: opacity 0.15s; max-width: 268px; min-width: 210px;
-    }
-    .ttb {
-      background: var(--surface); border-radius: 10px; padding: 14px 16px;
-      border: 1px solid rgba(255,255,255,0.07);
-    }
+    #tt { position: fixed; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.15s; max-width: 268px; min-width: 210px; }
+    .ttb { background: var(--surface); border-radius: 10px; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.07); }
     #tt-cat { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
-    #tt-name { font-size: 13.5px; font-weight: 500; color: var(--text); margin-bottom: 7px; line-height: 1.3; }
+    #tt-name { font-size: 13.5px; font-weight: 500; color: #e2e8f0; margin-bottom: 7px; line-height: 1.3; }
     #tt-desc { font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; font-weight: 300; }
     .ttf { display: flex; align-items: center; justify-content: space-between; }
     #tt-docs { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); }
-    #tt-link { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; text-decoration: none; letter-spacing: 0.5px; }
+    #tt-link { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; text-decoration: none; }
 
-    #intro {
-      position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
-      background: var(--bg); transition: opacity 0.8s;
-    }
-    .intro-inner { text-align: center; }
-    .intro-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 80px;
-      letter-spacing: 14px; color: var(--center); margin-bottom: 10px;
-    }
-    .intro-sub {
-      font-family: 'JetBrains Mono', monospace; font-size: 12px;
-      color: var(--muted); letter-spacing: 3px;
-    }
+    #intro { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: opacity 0.8s; }
+    .intro-title { font-family: 'Bebas Neue', sans-serif; font-size: 80px; letter-spacing: 14px; color: var(--center); text-align: center; }
+    .intro-sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 3px; text-align: center; margin-top: 8px; }
   </style>
 </head>
 <body>
 
-<!-- Intro screen -->
 <div id="intro">
-  <div class="intro-inner">
+  <div>
     <div class="intro-title">IQ LAB</div>
     <div class="intro-sub">I QUESTION — LOADING</div>
   </div>
@@ -160,290 +103,263 @@
   <div class="li"><div class="ld" style="background:#A78BFA"></div>Infrastructure</div>
 </div>
 
-<div id="hint">
-  scroll · zoom<br>
-  drag · pan<br>
-  click · open
-</div>
+<div id="hint">scroll · zoom<br>drag · pan<br>click · open</div>
 
 <script>
-// ── STARS ──────────────────────────────────────────────────────────────────
-(function() {
-  const c = document.getElementById('stars');
-  const ctx = c.getContext('2d');
-  let stars = [];
+  // ── STARS ──────────────────────────────────────────────────────────────────
+  (function() {
+    const c = document.getElementById('stars'), ctx = c.getContext('2d');
+    let S = [];
+    function resize() {
+      c.width = innerWidth; c.height = innerHeight;
+      S = Array.from({length:200}, () => ({
+        x: Math.random()*c.width, y: Math.random()*c.height,
+        r: Math.random()*1.1+0.15, a: Math.random()*0.5+0.08, da: (Math.random()-0.5)*0.003
+      }));
+    }
+    function draw() {
+      ctx.clearRect(0,0,c.width,c.height);
+      S.forEach(s => {
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${Math.max(0.04,Math.min(0.65,s.a)).toFixed(2)})`;
+        ctx.fill(); s.a+=s.da; if(s.a>0.6||s.a<0.05) s.da*=-1;
+      });
+      requestAnimationFrame(draw);
+    }
+    resize(); draw(); addEventListener('resize', resize);
+  })();
 
-  function resize() {
-    c.width = innerWidth; c.height = innerHeight;
-    stars = Array.from({ length: 200 }, () => ({
-      x: Math.random() * c.width, y: Math.random() * c.height,
-      r: Math.random() * 1.1 + 0.15,
-      a: Math.random() * 0.5 + 0.08, da: (Math.random() - 0.5) * 0.003
-    }));
+  // ── DATA ───────────────────────────────────────────────────────────────────
+  const DI = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons';
+  const IC = {
+    java:   `${DI}/java/java-original.svg`,
+    spring: `${DI}/spring/spring-original.svg`,
+    mysql:  `${DI}/mysql/mysql-original.svg`,
+    redis:  `${DI}/redis/redis-original.svg`,
+    kafka:  `${DI}/apachekafka/apachekafka-original.svg`,
+    docker: `${DI}/docker/docker-original.svg`,
+    git:    `${DI}/git/git-original.svg`,
+    linux:  `${DI}/linux/linux-original.svg`,
+    nginx:  `${DI}/nginx/nginx-original.svg`,
+    junit:  `${DI}/junit/junit-plain.svg`,
+    pg:     `${DI}/postgresql/postgresql-original.svg`,
+  };
+
+  const C = { java:'#F59E0B', spring:'#22C55E', database:'#3B82F6', messaging:'#F97316', infra:'#A78BFA', center:'#CBD5E1' };
+
+  const CATS = {
+    java:      { label:'Java Core',        angle:270 },
+    spring:    { label:'Spring Ecosystem', angle:342 },
+    messaging: { label:'Messaging',        angle:54  },
+    database:  { label:'Database',         angle:126 },
+    infra:     { label:'Infrastructure',   angle:198 },
+  };
+
+  const REPOS = [
+    { id:'jvm', cat:'java',     short:'JVM Deep Dive',    label:'JVM Deep Dive',            icon:IC.java,   docs:69,   url:'https://github.com/dev-book-lab/jvm-deep-dive',            desc:'JVM 내부 구조 완전 해부 — 클래스 로딩·GC·JIT·메모리 모델, CPU 레벨 성능 분석' },
+    { id:'mja', cat:'java',     short:'Modern Java',      label:'Modern Java in Action',     icon:IC.java,   docs:null, url:'https://github.com/dev-book-lab/modern-java-in-action',    desc:'자바 8+ 함수형 프로그래밍, 스트림 API, 람다, CompletableFuture' },
+    { id:'api', cat:'java',     short:'Java API Ref',     label:'Java API Reference',        icon:IC.java,   docs:null, url:'https://github.com/dev-book-lab/java-api-reference',        desc:'자바 표준 라이브러리 원리, 실무 패턴, 성능 최적화, 실행 가능한 예제' },
+    { id:'pat', cat:'java',     short:'Design Patterns',  label:'Java Design Patterns',      icon:IC.java,   docs:null, url:'https://github.com/dev-book-lab/java-design-patterns',      desc:'47가지 디자인 패턴 — GoF·아키텍처·동시성 패턴, 실전 Before/After' },
+    { id:'tst', cat:'java',     short:'Unit Testing',     label:'Unit Testing',              icon:IC.junit,  docs:null, url:'https://github.com/dev-book-lab/unit-testing',             desc:'단위 테스트 설계 원칙, Mocking 전략(Stub/Spy/Fake), 안티패턴 분석' },
+    { id:'obj', cat:'java',     short:'Objects',          label:'오브젝트 (Objects)',         icon:IC.java,   docs:null, url:'https://github.com/dev-book-lab/object',                   desc:'코드로 이해하는 객체지향 설계, 역할·책임·협력 원칙' },
+    { id:'sc',  cat:'spring',   short:'Spring Core',      label:'Spring Core Deep Dive',     icon:IC.spring, docs:51,   url:'https://github.com/dev-book-lab/spring-core-deep-dive',    desc:'IoC 컨테이너 완전 해부, DI 내부 동작, Bean 생명주기, AOP·Proxy 구현 원리' },
+    { id:'sm',  cat:'spring',   short:'Spring MVC',       label:'Spring MVC Deep Dive',      icon:IC.spring, docs:45,   url:'https://github.com/dev-book-lab/spring-mvc-deep-dive',     desc:'DispatcherServlet 완전 분해, HandlerMapping·Adapter, ArgumentResolver, Async' },
+    { id:'sb',  cat:'spring',   short:'Spring Boot',      label:'Spring Boot Internals',     icon:IC.spring, docs:45,   url:'https://github.com/dev-book-lab/spring-boot-internals',    desc:'Auto-configuration 내부 동작, 스타트업 프로세스, Property 관리, Actuator' },
+    { id:'ss',  cat:'spring',   short:'Spring Security',  label:'Spring Security Deep Dive', icon:IC.spring, docs:45,   url:'https://github.com/dev-book-lab/spring-security-deep-dive',desc:'FilterChainProxy 완전 분해, JWT·SecurityContext, OAuth2 Authorization Code Flow' },
+    { id:'sd',  cat:'spring',   short:'Spring Data & Tx', label:'Spring Data & Transaction', icon:IC.spring, docs:45,   url:'https://github.com/dev-book-lab/spring-data-transaction',  desc:'Spring Data JPA 내부 구조, 트랜잭션 관리, Hibernate 통합, 쿼리 성능 튜닝' },
+    { id:'sba', cat:'spring',   short:'Spring Batch',     label:'Spring Batch Deep Dive',    icon:IC.spring, docs:35,   url:'https://github.com/dev-book-lab/spring-batch-deep-dive',   desc:'ChunkOrientedTasklet 완전 분해, ItemReader·Processor·Writer, Partitioning' },
+    { id:'scl', cat:'spring',   short:'Spring Cloud',     label:'Spring Cloud Deep Dive',    icon:IC.spring, docs:40,   url:'https://github.com/dev-book-lab/spring-cloud-deep-dive',   desc:'분산 시스템 내부 — Config Server, Eureka, Gateway, Circuit Breaker, 분산 추적' },
+    { id:'dbi', cat:'database', short:'DB Internals',     label:'Database Internals',        icon:IC.pg,     docs:40,   url:'https://github.com/dev-book-lab/database-internals',       desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read' },
+    { id:'my',  cat:'database', short:'MySQL',            label:'MySQL Deep Dive',           icon:IC.mysql,  docs:38,   url:'https://github.com/dev-book-lab/mysql-deep-dive',          desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석' },
+    { id:'re',  cat:'database', short:'Redis',            label:'Redis Deep Dive',           icon:IC.redis,  docs:37,   url:'https://github.com/dev-book-lab/redis-deep-dive',          desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream' },
+    { id:'kf',  cat:'messaging',short:'Kafka',            label:'Kafka Deep Dive',           icon:IC.kafka,  docs:37,   url:'https://github.com/dev-book-lab/kafka-deep-dive',          desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리' },
+    { id:'net', cat:'infra',    short:'Network',          label:'Network Deep Dive',         icon:IC.nginx,  docs:37,   url:'https://github.com/dev-book-lab/network-deep-dive',        desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking' },
+    { id:'doc', cat:'infra',    short:'Docker',           label:'Docker Deep Dive',          icon:IC.docker, docs:null, url:'https://github.com/dev-book-lab/docker-deep-dive',         desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅' },
+    { id:'git', cat:'infra',    short:'Git',              label:'Git In-Depth',              icon:IC.git,    docs:null, url:'https://github.com/dev-book-lab/git-in-depth',             desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅' },
+    { id:'lnx', cat:'infra',    short:'Linux',            label:'Linux for Backend',         icon:IC.linux,  docs:null, url:'https://github.com/dev-book-lab/linux-for-backend-deep-dive', desc:'Linux 커널 내부, 프로세스·스레드, 파일시스템, 네트워크 스택', wip:true },
+  ];
+
+  // ── LAYOUT ─────────────────────────────────────────────────────────────────
+  const W = innerWidth, H = innerHeight, CX = W/2, CY = H/2;
+  const HUB_D = Math.min(W,H)*0.265, REPO_D = Math.min(W,H)*0.165;
+  const FAN = 150, NODE_R = 19;
+
+  function rad(d) { return d*Math.PI/180; }
+
+  function buildGraph() {
+    const nodes=[], links=[], byId={};
+    const cn = {id:'center',type:'center',x:CX,y:CY};
+    nodes.push(cn); byId['center']=cn;
+
+    Object.entries(CATS).forEach(([cat,meta]) => {
+      const hr=rad(meta.angle), hx=CX+HUB_D*Math.cos(hr), hy=CY+HUB_D*Math.sin(hr);
+      const hId='hub-'+cat;
+      const hub={id:hId,type:'hub',cat,label:meta.label,x:hx,y:hy};
+      nodes.push(hub); byId[hId]=hub;
+      links.push({s:'center',t:hId,hub:true});
+
+      const reps=REPOS.filter(r=>r.cat===cat), n=reps.length;
+      reps.forEach((repo,i) => {
+        const half=(n-1)/2, step=n>1?FAN/(n-1):0;
+        const rr=rad(meta.angle+(i-half)*step);
+        const rx=hx+REPO_D*Math.cos(rr), ry=hy+REPO_D*Math.sin(rr);
+        const node={...repo,type:'repo',x:rx,y:ry};
+        nodes.push(node); byId[repo.id]=node;
+        links.push({s:hId,t:repo.id,hub:false});
+      });
+    });
+    return {nodes,links,byId};
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    stars.forEach(s => {
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${Math.max(0.04, Math.min(0.65, s.a)).toFixed(2)})`;
-      ctx.fill();
-      s.a += s.da;
-      if (s.a > 0.6 || s.a < 0.05) s.da *= -1;
-    });
-    requestAnimationFrame(draw);
-  }
+  const {nodes,links,byId} = buildGraph();
 
-  resize(); draw();
-  addEventListener('resize', resize);
-})();
+  // ── SVG ────────────────────────────────────────────────────────────────────
+  const svg = d3.select('#graph').attr('viewBox',`0 0 ${W} ${H}`);
+  const root = svg.append('g');
 
-// ── DATA ───────────────────────────────────────────────────────────────────
-const C = {
-  java:'#F59E0B', spring:'#22C55E', database:'#3B82F6',
-  messaging:'#F97316', infra:'#A78BFA', center:'#CBD5E1'
-};
+  svg.call(d3.zoom().scaleExtent([0.22,3.8]).on('zoom', e=>root.attr('transform',e.transform)));
 
-const CATS = {
-  java:      { label:'Java Core',         angle:270 },
-  spring:    { label:'Spring Ecosystem',  angle:342 },
-  messaging: { label:'Messaging',         angle:54  },
-  database:  { label:'Database',          angle:126 },
-  infra:     { label:'Infrastructure',    angle:198 },
-};
+  const defs = svg.append('defs');
 
-const REPOS = [
-  // Java
-  { id:'jvm',     cat:'java',      short:'JVM Deep Dive',          label:'JVM Deep Dive',                docs:69,   url:'https://github.com/dev-book-lab/jvm-deep-dive',            desc:'JVM 내부 구조 완전 해부 — 클래스 로딩·GC·JIT·메모리 모델, CPU 레벨 성능 분석' },
-  { id:'mja',     cat:'java',      short:'Modern Java',            label:'Modern Java in Action',         docs:null, url:'https://github.com/dev-book-lab/modern-java-in-action',    desc:'자바 8+ 함수형 프로그래밍, 스트림 API, 람다, CompletableFuture' },
-  { id:'api',     cat:'java',      short:'Java API Ref',           label:'Java API Reference',            docs:null, url:'https://github.com/dev-book-lab/java-api-reference',        desc:'자바 표준 라이브러리 원리, 실무 패턴, 성능 최적화, 실행 가능한 예제' },
-  { id:'pat',     cat:'java',      short:'Design Patterns',        label:'Java Design Patterns',          docs:null, url:'https://github.com/dev-book-lab/java-design-patterns',      desc:'47가지 디자인 패턴 — GoF·아키텍처·동시성 패턴, 실전 Before/After' },
-  { id:'tst',     cat:'java',      short:'Unit Testing',           label:'Unit Testing',                  docs:null, url:'https://github.com/dev-book-lab/unit-testing',             desc:'단위 테스트 설계 원칙, Mocking 전략(Stub/Spy/Fake), 안티패턴 분석' },
-  { id:'obj',     cat:'java',      short:'Objects',                label:'오브젝트 (Objects)',             docs:null, url:'https://github.com/dev-book-lab/object',                   desc:'코드로 이해하는 객체지향 설계, 역할·책임·협력 원칙' },
-  // Spring
-  { id:'sc',      cat:'spring',    short:'Spring Core',            label:'Spring Core Deep Dive',         docs:51,   url:'https://github.com/dev-book-lab/spring-core-deep-dive',    desc:'IoC 컨테이너 완전 해부, DI 내부 동작, Bean 생명주기, AOP·Proxy 구현 원리' },
-  { id:'sm',      cat:'spring',    short:'Spring MVC',             label:'Spring MVC Deep Dive',          docs:45,   url:'https://github.com/dev-book-lab/spring-mvc-deep-dive',     desc:'DispatcherServlet 완전 분해, HandlerMapping·Adapter, ArgumentResolver, Async' },
-  { id:'sb',      cat:'spring',    short:'Spring Boot',            label:'Spring Boot Internals',         docs:45,   url:'https://github.com/dev-book-lab/spring-boot-internals',    desc:'Auto-configuration 내부 동작, 스타트업 프로세스, Property 관리, Actuator' },
-  { id:'ss',      cat:'spring',    short:'Spring Security',        label:'Spring Security Deep Dive',     docs:45,   url:'https://github.com/dev-book-lab/spring-security-deep-dive',desc:'FilterChainProxy 완전 분해, JWT·SecurityContext, OAuth2 Authorization Code Flow' },
-  { id:'sd',      cat:'spring',    short:'Spring Data & Tx',       label:'Spring Data & Transaction',     docs:45,   url:'https://github.com/dev-book-lab/spring-data-transaction',  desc:'Spring Data JPA 내부 구조, 트랜잭션 관리, Hibernate 통합, 쿼리 성능 튜닝' },
-  { id:'sba',     cat:'spring',    short:'Spring Batch',           label:'Spring Batch Deep Dive',        docs:35,   url:'https://github.com/dev-book-lab/spring-batch-deep-dive',   desc:'ChunkOrientedTasklet 완전 분해, ItemReader·Processor·Writer, Partitioning' },
-  { id:'scl',     cat:'spring',    short:'Spring Cloud',           label:'Spring Cloud Deep Dive',        docs:40,   url:'https://github.com/dev-book-lab/spring-cloud-deep-dive',   desc:'분산 시스템 내부 — Config Server, Eureka, Gateway, Circuit Breaker, 분산 추적' },
-  // Database
-  { id:'dbi',     cat:'database',  short:'DB Internals',           label:'Database Internals',            docs:40,   url:'https://github.com/dev-book-lab/database-internals',       desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read' },
-  { id:'my',      cat:'database',  short:'MySQL',                  label:'MySQL Deep Dive',               docs:38,   url:'https://github.com/dev-book-lab/mysql-deep-dive',          desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석' },
-  { id:'re',      cat:'database',  short:'Redis',                  label:'Redis Deep Dive',               docs:37,   url:'https://github.com/dev-book-lab/redis-deep-dive',          desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream' },
-  // Messaging
-  { id:'kf',      cat:'messaging', short:'Kafka',                  label:'Kafka Deep Dive',               docs:37,   url:'https://github.com/dev-book-lab/kafka-deep-dive',          desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리' },
-  // Infra
-  { id:'net',     cat:'infra',     short:'Network',                label:'Network Deep Dive',             docs:37,   url:'https://github.com/dev-book-lab/network-deep-dive',        desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking' },
-  { id:'doc',     cat:'infra',     short:'Docker',                 label:'Docker Deep Dive',              docs:null, url:'https://github.com/dev-book-lab/docker-deep-dive',         desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅' },
-  { id:'git',     cat:'infra',     short:'Git',                    label:'Git In-Depth',                  docs:null, url:'https://github.com/dev-book-lab/git-in-depth',             desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅' },
-  { id:'lnx',     cat:'infra',     short:'Linux',                  label:'Linux for Backend',             docs:null, url:'https://github.com/dev-book-lab/linux-for-backend-deep-dive', desc:'Linux 커널 내부, 프로세스·스레드, 파일시스템, 네트워크 스택', wip:true },
-];
+  // Center glow gradient
+  const rg = defs.append('radialGradient').attr('id','cglow').attr('cx','50%').attr('cy','50%').attr('r','50%');
+  rg.append('stop').attr('offset','0%').attr('stop-color','#CBD5E1').attr('stop-opacity',0.12);
+  rg.append('stop').attr('offset','100%').attr('stop-color','#CBD5E1').attr('stop-opacity',0);
 
-// ── LAYOUT ─────────────────────────────────────────────────────────────────
-const W = innerWidth, H = innerHeight;
-const CX = W / 2, CY = H / 2;
-const HUB_D = Math.min(W, H) * 0.265;
-const REPO_D = Math.min(W, H) * 0.158;
-const FAN = 150;
-
-function rad(d) { return d * Math.PI / 180; }
-
-function buildGraph() {
-  const nodes = [], links = [], byId = {};
-
-  const c = { id:'center', type:'center', x:CX, y:CY };
-  nodes.push(c); byId['center'] = c;
-
-  Object.entries(CATS).forEach(([cat, meta]) => {
-    const hr = rad(meta.angle);
-    const hx = CX + HUB_D * Math.cos(hr), hy = CY + HUB_D * Math.sin(hr);
-    const hId = 'hub-' + cat;
-    const hub = { id:hId, type:'hub', cat, label:meta.label, x:hx, y:hy };
-    nodes.push(hub); byId[hId] = hub;
-    links.push({ s:'center', t:hId, hub:true });
-
-    const reps = REPOS.filter(r => r.cat === cat);
-    const n = reps.length;
-    reps.forEach((repo, i) => {
-      const half = (n - 1) / 2;
-      const step = n > 1 ? FAN / (n - 1) : 0;
-      const aOff = (i - half) * step;
-      const rr = rad(meta.angle + aOff);
-      const rx = hx + REPO_D * Math.cos(rr), ry = hy + REPO_D * Math.sin(rr);
-      const node = { ...repo, type:'repo', x:rx, y:ry };
-      nodes.push(node); byId[repo.id] = node;
-      links.push({ s:hId, t:repo.id, hub:false });
-    });
+  // Glow filters
+  Object.keys(C).forEach(k => {
+    const f = defs.append('filter').attr('id',`gl-${k}`).attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
+    f.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','6').attr('result','blur');
+    const m = f.append('feMerge');
+    m.append('feMergeNode').attr('in','blur');
+    m.append('feMergeNode').attr('in','SourceGraphic');
   });
 
-  return { nodes, links, byId };
-}
+  // ClipPaths for all repo icons
+  REPOS.forEach(repo => {
+    defs.append('clipPath').attr('id','clip-'+repo.id)
+    .append('circle').attr('r', NODE_R-3);
+  });
 
-const { nodes, links, byId } = buildGraph();
-
-// ── SVG ────────────────────────────────────────────────────────────────────
-const svg = d3.select('#graph');
-svg.attr('viewBox', `0 0 ${W} ${H}`);
-const root = svg.append('g');
-
-svg.call(d3.zoom().scaleExtent([0.22, 3.8])
-  .on('zoom', e => root.attr('transform', e.transform)));
-
-// Defs
-const defs = svg.append('defs');
-
-// Radial gradient for center glow
-const rg = defs.append('radialGradient').attr('id','cglow').attr('cx','50%').attr('cy','50%').attr('r','50%');
-rg.append('stop').attr('offset','0%').attr('stop-color','#CBD5E1').attr('stop-opacity',0.1);
-rg.append('stop').attr('offset','100%').attr('stop-color','#CBD5E1').attr('stop-opacity',0);
-
-// Glow filter for each category
-Object.entries(C).forEach(([k]) => {
-  const f = defs.append('filter').attr('id',`gl-${k}`)
-    .attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
-  f.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','6').attr('result','blur');
-  const m = f.append('feMerge');
-  m.append('feMergeNode').attr('in','blur');
-  m.append('feMergeNode').attr('in','SourceGraphic');
-});
-
-// ── LINKS ──────────────────────────────────────────────────────────────────
-root.append('g').selectAll('line').data(links).join('line')
-  .attr('x1', d => byId[d.s].x).attr('y1', d => byId[d.s].y)
-  .attr('x2', d => byId[d.t].x).attr('y2', d => byId[d.t].y)
-  .attr('stroke', d => { const n = byId[d.t]; return n.cat ? C[n.cat] : C.center; })
-  .attr('stroke-width', d => d.hub ? 1.1 : 0.65)
-  .attr('stroke-opacity', d => d.hub ? 0.3 : 0.16)
-  .attr('stroke-dasharray', d => d.hub ? 'none' : '3,5')
-  .style('opacity', 0)
+  // ── LINKS ──────────────────────────────────────────────────────────────────
+  root.append('g').selectAll('line').data(links).join('line')
+  .attr('x1',d=>byId[d.s].x).attr('y1',d=>byId[d.s].y)
+  .attr('x2',d=>byId[d.t].x).attr('y2',d=>byId[d.t].y)
+  .attr('stroke',d=>{ const n=byId[d.t]; return n.cat?C[n.cat]:C.center; })
+  .attr('stroke-width', d=>d.hub?1.4:1.1)
+  .attr('stroke-opacity', d=>d.hub?0.48:0.44)
+  .attr('stroke-dasharray', d=>d.hub?'none':'5,4')
+  .style('opacity',0)
   .transition().duration(1200).delay(600)
-  .style('opacity', 1);
+  .style('opacity',1);
 
-// ── NODES ──────────────────────────────────────────────────────────────────
-const nodeG = root.append('g').selectAll('g').data(nodes).join('g')
-  .attr('transform', d => `translate(${d.x},${d.y})`);
+  // ── NODES ──────────────────────────────────────────────────────────────────
+  const nodeG = root.append('g').selectAll('g').data(nodes).join('g')
+  .attr('transform',d=>`translate(${d.x},${d.y})`);
 
-nodeG.each(function(d) {
-  const g = d3.select(this);
-  const col = d.type === 'center' ? C.center : C[d.cat];
-  const gid = d.type === 'center' ? 'center' : d.cat;
+  nodeG.each(function(d) {
+    const g = d3.select(this);
+    const col = d.type==='center' ? C.center : C[d.cat];
+    const gid = d.type==='center' ? 'center' : d.cat;
 
-  if (d.type === 'center') {
-    g.append('circle').attr('r', 75).attr('fill','url(#cglow)');
-    g.append('circle').attr('r', 56).attr('fill','none')
-      .attr('stroke', col).attr('stroke-opacity',0.08).attr('stroke-width',1)
-      .attr('stroke-dasharray','4,6');
-    g.append('circle').attr('r', 44).attr('fill','rgba(203,213,225,0.045)')
-      .attr('stroke', col).attr('stroke-opacity',0.4).attr('stroke-width',1.5)
-      .attr('filter',`url(#gl-${gid})`);
-    g.append('text').attr('y',-6).attr('text-anchor','middle')
-      .attr('font-family','Bebas Neue, sans-serif').attr('font-size','21px')
-      .attr('letter-spacing','5px').attr('fill',col).attr('opacity',0.88).text('IQ');
-    g.append('text').attr('y',14).attr('text-anchor','middle')
-      .attr('font-family','Bebas Neue, sans-serif').attr('font-size','21px')
-      .attr('letter-spacing','5px').attr('fill',col).attr('opacity',0.88).text('LAB');
-    g.append('text').attr('y',31).attr('text-anchor','middle')
-      .attr('font-family','JetBrains Mono, monospace').attr('font-size','7.5px')
-      .attr('letter-spacing','3px').attr('fill',col).attr('opacity',0.3).text('DEV BOOK LAB');
+    if (d.type==='center') {
+      g.append('circle').attr('r',75).attr('fill','url(#cglow)');
+      g.append('circle').attr('r',56).attr('fill','none')
+      .attr('stroke',col).attr('stroke-opacity',0.1).attr('stroke-width',1).attr('stroke-dasharray','4,7');
+      g.append('circle').attr('r',44).attr('fill','rgba(203,213,225,0.05)')
+      .attr('stroke',col).attr('stroke-opacity',0.42).attr('stroke-width',1.5).attr('filter',`url(#gl-${gid})`);
+      g.append('text').attr('y',-6).attr('text-anchor','middle')
+      .attr('font-family','Bebas Neue, sans-serif').attr('font-size','21px').attr('letter-spacing','5px').attr('fill',col).attr('opacity',0.88).text('IQ');
+      g.append('text').attr('y',14).attr('text-anchor','middle')
+      .attr('font-family','Bebas Neue, sans-serif').attr('font-size','21px').attr('letter-spacing','5px').attr('fill',col).attr('opacity',0.88).text('LAB');
+      g.append('text').attr('y',31).attr('text-anchor','middle')
+      .attr('font-family','JetBrains Mono, monospace').attr('font-size','7.5px').attr('letter-spacing','3px').attr('fill',col).attr('opacity',0.3).text('DEV BOOK LAB');
 
-  } else if (d.type === 'hub') {
-    g.append('circle').attr('r',26).attr('fill',col+'12')
-      .attr('stroke',col).attr('stroke-opacity',0.55).attr('stroke-width',1.2)
-      .attr('filter',`url(#gl-${gid})`);
-    const shorts = { java:'Java', spring:'Spring', database:'Database', messaging:'Kafka', infra:'Infra' };
-    g.append('text').attr('y',42).attr('text-anchor','middle')
-      .attr('font-family','JetBrains Mono, monospace').attr('font-size','9.5px')
-      .attr('letter-spacing','1.5px').attr('fill',col).attr('opacity',0.7)
-      .text(shorts[d.cat] || d.cat);
+    } else if (d.type==='hub') {
+      g.append('circle').attr('r',27).attr('fill',col+'14')
+      .attr('stroke',col).attr('stroke-opacity',0.58).attr('stroke-width',1.3).attr('filter',`url(#gl-${gid})`);
+      const shorts={java:'Java',spring:'Spring',database:'Database',messaging:'Kafka',infra:'Infra'};
+      g.append('text').attr('y',44).attr('text-anchor','middle')
+      .attr('font-family','JetBrains Mono, monospace').attr('font-size','9.5px').attr('letter-spacing','1.5px').attr('fill',col).attr('opacity',0.72)
+      .text(shorts[d.cat]||d.cat);
 
-  } else {
-    const r = d.wip ? 13 : 15;
-    g.append('circle').attr('r', r).attr('fill', col+'18')
-      .attr('stroke', col)
-      .attr('stroke-opacity', d.wip ? 0.22 : 0.52)
-      .attr('stroke-width', d.wip ? 0.8 : 1)
-      .attr('stroke-dasharray', d.wip ? '2.5,3' : 'none');
+    } else {
+      const r=NODE_R, wip=d.wip;
+      g.append('circle').attr('r',r).attr('fill',col+'22')
+      .attr('stroke',col).attr('stroke-opacity',wip?0.22:0.55)
+      .attr('stroke-width',wip?0.8:1.2).attr('stroke-dasharray',wip?'2.5,3':'none');
 
-    // Label: project outward from hub
-    const hub = byId['hub-' + d.cat];
-    const dx = d.x - hub.x, dy = d.y - hub.y;
-    const len = Math.sqrt(dx*dx + dy*dy) || 1;
-    const nx = dx/len, ny = dy/len;
-    const lx = nx * (r + 7), ly = ny * (r + 7);
-    const anchor = Math.abs(nx) < 0.22 ? 'middle' : (nx > 0 ? 'start' : 'end');
+      if (d.icon) {
+        g.append('image')
+        .attr('href',d.icon)
+        .attr('x',-(r-3)).attr('y',-(r-3))
+        .attr('width',(r-3)*2).attr('height',(r-3)*2)
+        .attr('clip-path',`url(#clip-${d.id})`)
+        .attr('opacity',wip?0.3:0.65)
+        .attr('preserveAspectRatio','xMidYMid meet');
+      }
 
-    g.append('text').attr('x', lx).attr('y', ly + 4)
-      .attr('text-anchor', anchor)
+      const hub=byId['hub-'+d.cat];
+      const dx=d.x-hub.x, dy=d.y-hub.y, len=Math.sqrt(dx*dx+dy*dy)||1;
+      const nx=dx/len, ny=dy/len;
+      const lx=nx*(r+8), ly=ny*(r+8);
+      const anchor=Math.abs(nx)<0.22?'middle':(nx>0?'start':'end');
+
+      g.append('text').attr('x',lx).attr('y',ly+4).attr('text-anchor',anchor)
       .attr('font-family','JetBrains Mono, monospace').attr('font-size','9px')
-      .attr('fill', col).attr('opacity', d.wip ? 0.4 : 0.7)
-      .text(d.short);
+      .attr('fill',col).attr('opacity',wip?0.38:0.72).text(d.short);
 
-    if (d.wip) {
-      g.append('text').attr('x', lx).attr('y', ly + 15)
-        .attr('text-anchor', anchor)
+      if (wip) {
+        g.append('text').attr('x',lx).attr('y',ly+16).attr('text-anchor',anchor)
         .attr('font-family','JetBrains Mono, monospace').attr('font-size','7px')
         .attr('fill','#F97316').attr('opacity',0.6).text('WIP');
-    }
+      }
 
-    // Interactions
-    g.style('cursor','pointer')
-      .on('mouseenter', function(e, nd) {
-        d3.select(this).select('circle')
-          .attr('stroke-opacity', 1).attr('r', r + 2.5)
-          .attr('filter', `url(#gl-${nd.cat})`);
-        showTT(e, nd);
+      g.style('cursor','pointer')
+      .on('mouseenter', function(e,nd) {
+        d3.select(this).select('circle').attr('stroke-opacity',1).attr('r',r+2.5).attr('filter',`url(#gl-${nd.cat})`);
+        d3.select(this).select('image').attr('opacity',1);
+        showTT(e,nd);
       })
       .on('mousemove', moveTT)
-      .on('mouseleave', function(e, nd) {
-        d3.select(this).select('circle')
-          .attr('stroke-opacity', nd.wip ? 0.22 : 0.52)
-          .attr('r', r).attr('filter', null);
+      .on('mouseleave', function(e,nd) {
+        d3.select(this).select('circle').attr('stroke-opacity',nd.wip?0.22:0.55).attr('r',r).attr('filter',null);
+        d3.select(this).select('image').attr('opacity',nd.wip?0.3:0.65);
         hideTT();
       })
-      .on('click', (e, nd) => { if (nd.url) window.open(nd.url, '_blank'); });
+      .on('click', (e,nd)=>{ if(nd.url) window.open(nd.url,'_blank'); });
+    }
+  });
+
+  nodeG.style('opacity',0).transition().duration(800).delay((d,i)=>300+i*28).style('opacity',1);
+
+  // ── TOOLTIP ────────────────────────────────────────────────────────────────
+  const tt=document.getElementById('tt');
+  function showTT(e,d) {
+    const col=C[d.cat]||'';
+    document.getElementById('tt-cat').style.color=col;
+    document.getElementById('tt-cat').textContent=CATS[d.cat]?.label||'';
+    document.getElementById('tt-name').textContent=d.label+(d.wip?'  🚧':'');
+    document.getElementById('tt-desc').textContent=d.desc||'';
+    document.getElementById('tt-docs').textContent=d.docs?`📄 ${d.docs}개 문서`:'';
+    const lnk=document.getElementById('tt-link');
+    lnk.href=d.url||'#'; lnk.style.color=col;
+    moveTT(e); tt.style.opacity='1';
   }
-});
+  function moveTT(e) {
+    let x=e.clientX+18, y=e.clientY-8;
+    if(x+278>innerWidth) x=e.clientX-278-10;
+    if(y+190>innerHeight) y=e.clientY-190;
+    tt.style.left=x+'px'; tt.style.top=y+'px';
+  }
+  function hideTT() { tt.style.opacity='0'; }
 
-// Entry animation
-nodeG.style('opacity', 0)
-  .transition().duration(800).delay((d, i) => 300 + i * 28)
-  .style('opacity', 1);
-
-// ── TOOLTIP ────────────────────────────────────────────────────────────────
-const tt = document.getElementById('tt');
-
-function showTT(e, d) {
-  const col = C[d.cat] || '#fff';
-  document.getElementById('tt-cat').style.color = col;
-  document.getElementById('tt-cat').textContent = CATS[d.cat]?.label || '';
-  document.getElementById('tt-name').textContent = d.label + (d.wip ? '  🚧' : '');
-  document.getElementById('tt-desc').textContent = d.desc || '';
-  document.getElementById('tt-docs').textContent = d.docs ? `📄 ${d.docs}개 문서` : '';
-  const lnk = document.getElementById('tt-link');
-  lnk.href = d.url || '#';
-  lnk.style.color = col;
-  moveTT(e);
-  tt.style.opacity = '1';
-}
-
-function moveTT(e) {
-  let x = e.clientX + 18, y = e.clientY - 8;
-  if (x + 278 > innerWidth) x = e.clientX - 278 - 10;
-  if (y + 190 > innerHeight) y = e.clientY - 190;
-  tt.style.left = x + 'px'; tt.style.top = y + 'px';
-}
-
-function hideTT() { tt.style.opacity = '0'; }
-
-// ── INTRO FADE ─────────────────────────────────────────────────────────────
-setTimeout(() => {
-  const intro = document.getElementById('intro');
-  intro.style.opacity = '0';
-  setTimeout(() => intro.remove(), 900);
-}, 700);
+  // ── INTRO FADE ─────────────────────────────────────────────────────────────
+  setTimeout(()=>{
+    const intro=document.getElementById('intro');
+    intro.style.opacity='0';
+    setTimeout(()=>intro.remove(),900);
+  },700);
 </script>
 </body>
 </html>
