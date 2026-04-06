@@ -172,7 +172,7 @@
     { id:'dbi', cat:'database', short:'DB Internals',     label:'Database Internals',        icon:IC.pg,     docs:40,   url:'https://github.com/dev-book-lab/database-internals',       desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read' },
     { id:'my',  cat:'database', short:'MySQL',            label:'MySQL Deep Dive',           icon:IC.mysql,  docs:38,   url:'https://github.com/dev-book-lab/mysql-deep-dive',          desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석' },
     { id:'re',  cat:'database', short:'Redis',            label:'Redis Deep Dive',           icon:IC.redis,  docs:37,   url:'https://github.com/dev-book-lab/redis-deep-dive',          desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream' },
-    { id:'kf',  cat:'messaging',short:'Kafka',            label:'Kafka Deep Dive',           icon:IC.kafka,  docs:37,   url:'https://github.com/dev-book-lab/kafka-deep-dive',          desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리' },
+    { id:'kf',  cat:'messaging',short:'Kafka',            label:'Kafka Deep Dive',           icon:IC.kafka,  docs:37,   url:'https://github.com/dev-book-lab/kafka-deep-dive',          desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리', darkIcon:true },
     { id:'net', cat:'infra',    short:'Network',          label:'Network Deep Dive',         icon:IC.nginx,  docs:37,   url:'https://github.com/dev-book-lab/network-deep-dive',        desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking' },
     { id:'doc', cat:'infra',    short:'Docker',           label:'Docker Deep Dive',          icon:IC.docker, docs:null, url:'https://github.com/dev-book-lab/docker-deep-dive',         desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅' },
     { id:'git', cat:'infra',    short:'Git',              label:'Git In-Depth',              icon:IC.git,    docs:null, url:'https://github.com/dev-book-lab/git-in-depth',             desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅' },
@@ -290,6 +290,11 @@
       .attr('stroke-width',wip?0.8:1.2).attr('stroke-dasharray',wip?'2.5,3':'none');
 
       if (d.icon) {
+        if (d.darkIcon) {
+          g.append('circle').attr('r', NODE_R-3)
+          .attr('fill','rgba(255,255,255,0.88)')
+          .attr('clip-path',`url(#clip-${d.id})`);
+        }
         g.append('image')
         .attr('href',d.icon)
         .attr('x',-(r-3)).attr('y',-(r-3))
