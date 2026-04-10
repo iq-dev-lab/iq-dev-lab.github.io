@@ -4,21 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IQ Dev Lab</title>
-  <meta name="description" content="질문으로 내부를 파헤치는 개발자의 딥다이브 연구소">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <style>
-    :root {
-      --bg:#07090f; --surface:#0c1120;
-      --java:#F59E0B; --spring:#22C55E; --database:#3B82F6;
-      --messaging:#F97316; --infra:#A78BFA; --architecture:#06B6D4;
-      --center:#CBD5E1; --muted:#4A5568;
-    }
+    :root{--bg:#07090f;--surface:#0c1120;--java:#F59E0B;--spring:#22C55E;--database:#3B82F6;--messaging:#F97316;--infra:#A78BFA;--architecture:#06B6D4;--center:#CBD5E1;--muted:#4A5568}
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Noto Sans KR',sans-serif}
     #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
-    header{position:fixed;top:0;left:0;width:100%;z-index:20;padding:16px 36px;display:flex;align-items:center;gap:18px;background:linear-gradient(180deg,rgba(7,9,15,.94) 60%,transparent 100%)}
+
+    /* ── 3-D tilt wrapper ── */
+    #gw{position:fixed;inset:0;z-index:1;perspective:1100px;perspective-origin:50% 50%}
+    #graph-inner{width:100%;height:100%;transform-style:preserve-3d;will-change:transform;transition:transform .08s linear}
+    #graph{width:100%;height:100%;cursor:grab;display:block}
+    #graph:active{cursor:grabbing}
+
+    /* ── Hub orbit ring animation ── */
+    @keyframes orbit{to{transform:rotate(360deg)}}
+    @keyframes orbit-rev{to{transform:rotate(-360deg)}}
+    @keyframes hub-breath{0%,100%{r:27;opacity:.58}50%{r:31;opacity:.9}}
+    .hub-orbit-a{animation:orbit var(--od,11s) linear infinite;transform-box:fill-box;transform-origin:center}
+    .hub-orbit-b{animation:orbit-rev var(--od2,17s) linear infinite;transform-box:fill-box;transform-origin:center}
+
+    /* ── Edge flow animation ── */
+    @keyframes dash-flow{to{stroke-dashoffset:-28}}
+    .flow-edge{animation:dash-flow .7s linear infinite;pointer-events:none}
+
+    /* ── Node ring pulse on hover ── */
+    @keyframes ring-burst{0%{r:18;stroke-opacity:.9}100%{r:52;stroke-opacity:0}}
+    .burst-ring{animation:ring-burst .7s ease-out forwards;pointer-events:none}
+
+    /* ── Shooting star ── */
+    @keyframes shoot{0%{opacity:0;stroke-dashoffset:0}10%{opacity:1}90%{opacity:1}100%{opacity:0;stroke-dashoffset:-220}}
+    .shoot{stroke-dasharray:60 160;animation:shoot linear forwards}
+
+    header{position:fixed;top:0;left:0;width:100%;z-index:20;padding:16px 36px;display:flex;align-items:center;gap:18px;background:linear-gradient(180deg,rgba(7,9,15,.94) 60%,transparent)}
     .brand-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:6px;color:var(--center);line-height:1}
     .brand-iq{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:2px}
     .h-sep{width:1px;height:34px;background:rgba(255,255,255,.06)}
@@ -27,22 +47,20 @@
     .h-stats{margin-left:auto;display:flex;gap:24px}
     .stat-n{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--center);line-height:1;text-align:center}
     .stat-l{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-align:center}
-    #gw{position:fixed;inset:0;z-index:1}
-    #graph{width:100%;height:100%;cursor:grab}
-    #graph:active{cursor:grabbing}
     #legend{position:fixed;bottom:26px;left:36px;z-index:20;display:flex;flex-direction:column;gap:6px}
-    .li{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+    .li{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);transition:opacity .3s}
     .ld{width:7px;height:7px;border-radius:50%;flex-shrink:0}
     #hint{position:fixed;bottom:26px;right:36px;z-index:20;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted);text-align:right;line-height:1.9}
-    #tt{position:fixed;z-index:50;pointer-events:none;opacity:0;transition:opacity .15s;max-width:268px;min-width:210px}
-    .ttb{background:var(--surface);border-radius:10px;padding:14px 16px;border:1px solid rgba(255,255,255,.07)}
+    #tt{position:fixed;z-index:50;pointer-events:none;opacity:0;transition:opacity .15s;max-width:272px;min-width:214px}
+    .ttb{background:rgba(12,17,32,.96);backdrop-filter:blur(12px);border-radius:12px;padding:15px 17px;border:1px solid rgba(255,255,255,.09);box-shadow:0 0 32px rgba(0,0,0,.5)}
     #tt-cat{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
     #tt-name{font-size:13.5px;font-weight:500;color:#e2e8f0;margin-bottom:7px;line-height:1.3}
     #tt-desc{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:10px;font-weight:300}
     .ttf{display:flex;align-items:center;justify-content:space-between}
     #tt-docs{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted)}
-    #tt-link{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-decoration:none}
-    #intro{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .8s}
+    #tt-link{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-decoration:none;transition:opacity .15s}
+    #tt-link:hover{opacity:.7}
+    #intro{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .9s}
     .intro-title{font-family:'Bebas Neue',sans-serif;font-size:80px;letter-spacing:14px;color:var(--center);text-align:center}
     .intro-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:3px;text-align:center;margin-top:8px}
   </style>
@@ -50,6 +68,7 @@
 <body>
 <div id="intro"><div><div class="intro-title">IQ DEV LAB</div><div class="intro-sub">I QUESTION — LOADING</div></div></div>
 <canvas id="stars"></canvas>
+
 <header>
   <div><div class="brand-title">IQ DEV LAB</div><div class="brand-iq">I QUESTION</div></div>
   <div class="h-sep"></div>
@@ -59,258 +78,516 @@
     <div><div class="stat-n">1,000+</div><div class="stat-l">docs</div></div>
   </div>
 </header>
-<div id="gw"><svg id="graph"></svg></div>
+
+<div id="gw">
+  <div id="graph-inner">
+    <svg id="graph"></svg>
+  </div>
+</div>
+
 <div id="tt"><div class="ttb"><div id="tt-cat"></div><div id="tt-name"></div><div id="tt-desc"></div><div class="ttf"><div id="tt-docs"></div><a id="tt-link" href="#" target="_blank">GitHub →</a></div></div></div>
+
 <div id="legend">
-  <div class="li"><div class="ld" style="background:#F59E0B"></div>Java Core</div>
-  <div class="li"><div class="ld" style="background:#22C55E"></div>Spring Ecosystem</div>
-  <div class="li"><div class="ld" style="background:#06B6D4"></div>Architecture & Design</div>
-  <div class="li"><div class="ld" style="background:#F97316"></div>Messaging & Streaming</div>
-  <div class="li"><div class="ld" style="background:#3B82F6"></div>Database</div>
-  <div class="li"><div class="ld" style="background:#A78BFA"></div>Infrastructure & DevOps</div>
+  <div class="li" data-cat="java">    <div class="ld" style="background:#F59E0B"></div>Java Core</div>
+  <div class="li" data-cat="spring">  <div class="ld" style="background:#22C55E"></div>Spring Ecosystem</div>
+  <div class="li" data-cat="architecture"><div class="ld" style="background:#06B6D4"></div>Architecture & Design</div>
+  <div class="li" data-cat="messaging"><div class="ld" style="background:#F97316"></div>Messaging & Streaming</div>
+  <div class="li" data-cat="database"><div class="ld" style="background:#3B82F6"></div>Database</div>
+  <div class="li" data-cat="infra">   <div class="ld" style="background:#A78BFA"></div>Infrastructure & DevOps</div>
 </div>
 <div id="hint">scroll · zoom<br>drag · pan<br>click · open</div>
+
 <script>
-// ── Stars ──────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  STARS + SHOOTING STARS
+// ═══════════════════════════════════════════════
 (function(){
-  const c=document.getElementById('stars'),ctx=c.getContext('2d');let S=[];
-  function resize(){c.width=innerWidth;c.height=innerHeight;S=Array.from({length:200},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.1+.15,a:Math.random()*.5+.08,da:(Math.random()-.5)*.003}));}
-  function draw(){ctx.clearRect(0,0,c.width,c.height);S.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${Math.max(.04,Math.min(.65,s.a)).toFixed(2)})`;ctx.fill();s.a+=s.da;if(s.a>.6||s.a<.05)s.da*=-1;});requestAnimationFrame(draw);}
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  let S=[],shoots=[];
+  function resize(){
+    c.width=innerWidth;c.height=innerHeight;
+    S=Array.from({length:220},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.1+.15,a:Math.random()*.5+.08,da:(Math.random()-.5)*.003}));
+  }
+  function addShoot(){
+    const angle=Math.random()*0.4+0.1; // roughly diagonal
+    shoots.push({x:Math.random()*c.width,y:Math.random()*c.height*0.5,vx:Math.cos(angle)*14,vy:Math.sin(angle)*14,life:1,tail:[]});
+    setTimeout(addShoot, 4000+Math.random()*6000);
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    // twinkle stars
+    S.forEach(s=>{
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${Math.max(.04,Math.min(.65,s.a)).toFixed(2)})`;
+      ctx.fill();s.a+=s.da;if(s.a>.6||s.a<.05)s.da*=-1;
+    });
+    // shooting stars
+    shoots.forEach((sh,i)=>{
+      sh.tail.push({x:sh.x,y:sh.y});if(sh.tail.length>18)sh.tail.shift();
+      sh.x+=sh.vx;sh.y+=sh.vy;sh.life-=0.018;
+      if(sh.life<=0||sh.x>c.width+100||sh.y>c.height){shoots.splice(i,1);return;}
+      for(let t=1;t<sh.tail.length;t++){
+        const a=(t/sh.tail.length)*sh.life*0.7;
+        ctx.beginPath();ctx.moveTo(sh.tail[t-1].x,sh.tail[t-1].y);ctx.lineTo(sh.tail[t].x,sh.tail[t].y);
+        ctx.strokeStyle=`rgba(255,255,255,${a.toFixed(2)})`;ctx.lineWidth=1.5*(t/sh.tail.length);ctx.stroke();
+      }
+    });
+    requestAnimationFrame(draw);
+  }
   resize();draw();addEventListener('resize',resize);
+  setTimeout(addShoot,2000);
 })();
 
-// ── Icons ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  ICONS
+// ═══════════════════════════════════════════════
 function svgIcon(s){return'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);}
 const A='#06B6D4';
-
 const IC_CUSTOM={
-  network: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="8" width="11" height="48" rx="3" fill="#A78BFA" opacity="0.85"/><rect x="50" y="8" width="11" height="48" rx="3" fill="#A78BFA" opacity="0.85"/><line x1="14" y1="20" x2="50" y2="28" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/><polygon points="47,25 52,31 45,32" fill="#A78BFA"/><line x1="50" y1="38" x2="14" y2="46" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/><polygon points="17,43 12,49 19,50" fill="#A78BFA" opacity="0.8"/></svg>`),
-  dbInternals: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="8" y="5" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5"/><rect x="8" y="25" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.75"/><rect x="8" y="45" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.45"/><circle cx="32" cy="12" r="4" fill="#3B82F6"/><line x1="26" y1="20" x2="21" y2="25" stroke="#3B82F6" stroke-width="2" opacity="0.8"/><line x1="38" y1="20" x2="43" y2="25" stroke="#3B82F6" stroke-width="2" opacity="0.8"/><circle cx="20" cy="32" r="4" fill="#3B82F6" opacity="0.85"/><circle cx="44" cy="32" r="4" fill="#3B82F6" opacity="0.85"/></svg>`),
-  archPatterns: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><polygon points="32,3 59,18.5 59,45.5 32,61 5,45.5 5,18.5" fill="none" stroke="${A}" stroke-width="2.5"/><polygon points="32,13 51,24 51,46 32,55 13,46 13,24" fill="none" stroke="${A}" stroke-width="2" opacity="0.62"/><polygon points="32,24 43.5,30.5 43.5,43.5 32,50 20.5,43.5 20.5,30.5" fill="${A}" fill-opacity="0.18" stroke="${A}" stroke-width="1.5" opacity="0.42"/></svg>`),
-  ddd: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="4" width="26" height="26" rx="4" fill="none" stroke="${A}" stroke-width="2.5"/><rect x="34" y="4" width="26" height="26" rx="4" fill="none" stroke="${A}" stroke-width="2" opacity="0.68"/><rect x="19" y="34" width="26" height="26" rx="4" fill="${A}" fill-opacity="0.16" stroke="${A}" stroke-width="2"/><circle cx="17" cy="17" r="5" fill="${A}" opacity="0.32"/><circle cx="47" cy="17" r="5" fill="${A}" opacity="0.22"/><circle cx="32" cy="47" r="5" fill="${A}" opacity="0.42"/></svg>`),
-  cqrs: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="6" width="25" height="13" rx="3" fill="none" stroke="${A}" stroke-width="2.2"/><rect x="36" y="6" width="25" height="13" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.62"/><line x1="32" y1="3" x2="32" y2="61" stroke="${A}" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.35"/><line x1="15.5" y1="19" x2="15.5" y2="31" stroke="${A}" stroke-width="2" opacity="0.72"/><polygon points="11,30 15.5,37 20,30" fill="${A}" opacity="0.72"/><line x1="48.5" y1="19" x2="48.5" y2="31" stroke="${A}" stroke-width="2" opacity="0.48"/><polygon points="44,30 48.5,37 53,30" fill="${A}" opacity="0.48"/><rect x="3" y="39" width="25" height="13" rx="3" fill="${A}" fill-opacity="0.16" stroke="${A}" stroke-width="2"/><rect x="36" y="39" width="25" height="13" rx="3" fill="${A}" fill-opacity="0.1" stroke="${A}" stroke-width="1.5" opacity="0.48"/></svg>`),
-  msa: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="7.5" fill="${A}" fill-opacity="0.22" stroke="${A}" stroke-width="2.2"/><circle cx="32" cy="7" r="5.5" fill="none" stroke="${A}" stroke-width="2"/><circle cx="55" cy="20" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.85"/><circle cx="55" cy="44" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.72"/><circle cx="32" cy="57" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.62"/><circle cx="9" cy="44" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.72"/><circle cx="9" cy="20" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.85"/><line x1="32" y1="12.5" x2="32" y2="24.5" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="49.8" y1="23" x2="38.8" y2="28" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="49.8" y1="41" x2="38.8" y2="36" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="32" y1="51.5" x2="32" y2="39.5" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="14.2" y1="41" x2="25.2" y2="36" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="14.2" y1="23" x2="25.2" y2="28" stroke="${A}" stroke-width="1.5" opacity="0.5"/></svg>`),
-  sysdesign: svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="22" width="16" height="20" rx="3" fill="none" stroke="${A}" stroke-width="2.2"/><rect x="24" y="4" width="16" height="14" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.85"/><rect x="44" y="22" width="16" height="20" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.75"/><rect x="24" y="46" width="16" height="14" rx="3" fill="${A}" fill-opacity="0.18" stroke="${A}" stroke-width="2"/><line x1="20" y1="32" x2="24" y2="32" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="40" y1="32" x2="44" y2="32" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="32" y1="18" x2="32" y2="22" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="32" y1="42" x2="32" y2="46" stroke="${A}" stroke-width="2" opacity="0.6"/><circle cx="12" cy="32" r="3.5" fill="${A}" opacity="0.48"/><circle cx="52" cy="32" r="3.5" fill="${A}" opacity="0.38"/><circle cx="32" cy="11" r="3.5" fill="${A}" opacity="0.52"/><circle cx="32" cy="53" r="3.5" fill="${A}" opacity="0.58"/></svg>`),
+  network:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="8" width="11" height="48" rx="3" fill="#A78BFA" opacity="0.85"/><rect x="50" y="8" width="11" height="48" rx="3" fill="#A78BFA" opacity="0.85"/><line x1="14" y1="20" x2="50" y2="28" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/><polygon points="47,25 52,31 45,32" fill="#A78BFA"/><line x1="50" y1="38" x2="14" y2="46" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/><polygon points="17,43 12,49 19,50" fill="#A78BFA" opacity="0.8"/></svg>`),
+  dbInternals:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="8" y="5" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5"/><rect x="8" y="25" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.75"/><rect x="8" y="45" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.45"/><circle cx="32" cy="12" r="4" fill="#3B82F6"/><line x1="26" y1="20" x2="21" y2="25" stroke="#3B82F6" stroke-width="2" opacity="0.8"/><line x1="38" y1="20" x2="43" y2="25" stroke="#3B82F6" stroke-width="2" opacity="0.8"/><circle cx="20" cy="32" r="4" fill="#3B82F6" opacity="0.85"/><circle cx="44" cy="32" r="4" fill="#3B82F6" opacity="0.85"/></svg>`),
+  archPatterns:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><polygon points="32,3 59,18.5 59,45.5 32,61 5,45.5 5,18.5" fill="none" stroke="${A}" stroke-width="2.5"/><polygon points="32,13 51,24 51,46 32,55 13,46 13,24" fill="none" stroke="${A}" stroke-width="2" opacity="0.62"/><polygon points="32,24 43.5,30.5 43.5,43.5 32,50 20.5,43.5 20.5,30.5" fill="${A}" fill-opacity="0.18" stroke="${A}" stroke-width="1.5" opacity="0.42"/></svg>`),
+  ddd:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="4" width="26" height="26" rx="4" fill="none" stroke="${A}" stroke-width="2.5"/><rect x="34" y="4" width="26" height="26" rx="4" fill="none" stroke="${A}" stroke-width="2" opacity="0.68"/><rect x="19" y="34" width="26" height="26" rx="4" fill="${A}" fill-opacity="0.16" stroke="${A}" stroke-width="2"/><circle cx="17" cy="17" r="5" fill="${A}" opacity="0.32"/><circle cx="47" cy="17" r="5" fill="${A}" opacity="0.22"/><circle cx="32" cy="47" r="5" fill="${A}" opacity="0.42"/></svg>`),
+  cqrs:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="6" width="25" height="13" rx="3" fill="none" stroke="${A}" stroke-width="2.2"/><rect x="36" y="6" width="25" height="13" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.62"/><line x1="32" y1="3" x2="32" y2="61" stroke="${A}" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.35"/><line x1="15.5" y1="19" x2="15.5" y2="31" stroke="${A}" stroke-width="2" opacity="0.72"/><polygon points="11,30 15.5,37 20,30" fill="${A}" opacity="0.72"/><line x1="48.5" y1="19" x2="48.5" y2="31" stroke="${A}" stroke-width="2" opacity="0.48"/><polygon points="44,30 48.5,37 53,30" fill="${A}" opacity="0.48"/><rect x="3" y="39" width="25" height="13" rx="3" fill="${A}" fill-opacity="0.16" stroke="${A}" stroke-width="2"/><rect x="36" y="39" width="25" height="13" rx="3" fill="${A}" fill-opacity="0.1" stroke="${A}" stroke-width="1.5" opacity="0.48"/></svg>`),
+  msa:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="7.5" fill="${A}" fill-opacity="0.22" stroke="${A}" stroke-width="2.2"/><circle cx="32" cy="7" r="5.5" fill="none" stroke="${A}" stroke-width="2"/><circle cx="55" cy="20" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.85"/><circle cx="55" cy="44" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.72"/><circle cx="32" cy="57" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.62"/><circle cx="9" cy="44" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.72"/><circle cx="9" cy="20" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.85"/><line x1="32" y1="12.5" x2="32" y2="24.5" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="49.8" y1="23" x2="38.8" y2="28" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="49.8" y1="41" x2="38.8" y2="36" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="32" y1="51.5" x2="32" y2="39.5" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="14.2" y1="41" x2="25.2" y2="36" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="14.2" y1="23" x2="25.2" y2="28" stroke="${A}" stroke-width="1.5" opacity="0.5"/></svg>`),
+  sysdesign:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="22" width="16" height="20" rx="3" fill="none" stroke="${A}" stroke-width="2.2"/><rect x="24" y="4" width="16" height="14" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.85"/><rect x="44" y="22" width="16" height="20" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.75"/><rect x="24" y="46" width="16" height="14" rx="3" fill="${A}" fill-opacity="0.18" stroke="${A}" stroke-width="2"/><line x1="20" y1="32" x2="24" y2="32" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="40" y1="32" x2="44" y2="32" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="32" y1="18" x2="32" y2="22" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="32" y1="42" x2="32" y2="46" stroke="${A}" stroke-width="2" opacity="0.6"/><circle cx="12" cy="32" r="3.5" fill="${A}" opacity="0.48"/><circle cx="52" cy="32" r="3.5" fill="${A}" opacity="0.38"/><circle cx="32" cy="11" r="3.5" fill="${A}" opacity="0.52"/><circle cx="32" cy="53" r="3.5" fill="${A}" opacity="0.58"/></svg>`),
 };
-
 const DI='https://cdn.jsdelivr.net/gh/devicons/devicon/icons';
-const IC={
-  java:`${DI}/java/java-original.svg`,
-  spring:`${DI}/spring/spring-original.svg`,
-  mysql:`${DI}/mysql/mysql-original.svg`,
-  redis:`${DI}/redis/redis-original.svg`,
-  postgres:`${DI}/postgresql/postgresql-original.svg`,
-  kafka:`${DI}/apachekafka/apachekafka-original.svg`,
-  rabbitmq:`${DI}/rabbitmq/rabbitmq-original.svg`,
-  docker:`${DI}/docker/docker-original.svg`,
-  git:`${DI}/git/git-original.svg`,
-  linux:`${DI}/linux/linux-original.svg`,
-  k8s:`${DI}/kubernetes/kubernetes-plain.svg`,
-  junit:`${DI}/junit/junit-plain.svg`,
-  elastic:`${DI}/elasticsearch/elasticsearch-original.svg`,
-  grafana:`${DI}/grafana/grafana-original.svg`,
-};
+const IC={java:`${DI}/java/java-original.svg`,spring:`${DI}/spring/spring-original.svg`,mysql:`${DI}/mysql/mysql-original.svg`,redis:`${DI}/redis/redis-original.svg`,postgres:`${DI}/postgresql/postgresql-original.svg`,kafka:`${DI}/apachekafka/apachekafka-original.svg`,rabbitmq:`${DI}/rabbitmq/rabbitmq-original.svg`,docker:`${DI}/docker/docker-original.svg`,git:`${DI}/git/git-original.svg`,linux:`${DI}/linux/linux-original.svg`,k8s:`${DI}/kubernetes/kubernetes-plain.svg`,junit:`${DI}/junit/junit-plain.svg`,elastic:`${DI}/elasticsearch/elasticsearch-original.svg`,grafana:`${DI}/grafana/grafana-original.svg`};
 
 const C={java:'#F59E0B',spring:'#22C55E',architecture:'#06B6D4',messaging:'#F97316',database:'#3B82F6',infra:'#A78BFA',center:'#CBD5E1'};
 
-// ── Categories: angle + per-category layout params ────────────────────
-// 6 hubs at 60° apart. Fan strictly bounded to prevent cross-category overlap.
-// Verified: all intra-category chords > node diameter, all cross-category gaps > 200px
 const CATS={
-  java:         {label:'Java Core',              angle:270, fan:68, repoFactor:0.25},
-  spring:       {label:'Spring Ecosystem',       angle:330, fan:68, repoFactor:0.25},
-  architecture: {label:'Architecture & Design',  angle:30,  fan:60, repoFactor:0.22},
-  messaging:    {label:'Messaging & Streaming',  angle:90,  fan:42, repoFactor:0.20},
-  database:     {label:'Database',               angle:150, fan:60, repoFactor:0.22},
-  infra:        {label:'Infrastructure & DevOps',angle:210, fan:64, repoFactor:0.23},
+  java:         {label:'Java Core',              angle:270,fan:68,repoFactor:0.25},
+  spring:       {label:'Spring Ecosystem',       angle:330,fan:68,repoFactor:0.25},
+  architecture: {label:'Architecture & Design',  angle:30, fan:60,repoFactor:0.22},
+  messaging:    {label:'Messaging & Streaming',  angle:90, fan:42,repoFactor:0.20},
+  database:     {label:'Database',               angle:150,fan:60,repoFactor:0.22},
+  infra:        {label:'Infrastructure & DevOps',angle:210,fan:64,repoFactor:0.23},
 };
 
 const REPOS=[
-  // Java Core — OOP first, JVM last
-  {id:'obj', cat:'java',         short:'Objects',        label:'오브젝트 (Objects)',           icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/object',                     desc:'코드로 이해하는 객체지향 설계, 역할·책임·협력 원칙 — OOP 사고방식의 시작점'},
-  {id:'mja', cat:'java',         short:'Modern Java',    label:'Modern Java in Action',       icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/modern-java-in-action',       desc:'자바 8+ 함수형 프로그래밍, 스트림 API, 람다, CompletableFuture'},
-  {id:'api', cat:'java',         short:'Java API Ref',   label:'Java API Reference',          icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/java-api-reference',          desc:'자바 표준 라이브러리 원리, 실무 패턴, 성능 최적화, 실행 가능한 예제'},
-  {id:'pat', cat:'java',         short:'Design Patterns',label:'Java Design Patterns',        icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/java-design-patterns',        desc:'47가지 디자인 패턴 — GoF·아키텍처·동시성 패턴, 실전 Before/After'},
-  {id:'tst', cat:'java',         short:'Unit Testing',   label:'Unit Testing',                icon:IC.junit,               docs:null, url:'https://github.com/iq-dev-lab/unit-testing',                desc:'단위 테스트 설계 원칙, Mocking 전략(Stub/Spy/Fake), 안티패턴 분석'},
-  {id:'con', cat:'java',         short:'Concurrency',    label:'Java Concurrency Deep Dive',  icon:IC.java,                docs:40,   url:'https://github.com/iq-dev-lab/java-concurrency-deep-dive',  desc:'JVM 락 메커니즘 완전 분해 — Mark Word·Biased/Thin/Fat Lock, volatile·happens-before, CAS·AQS, 가상 스레드'},
-  {id:'jvm', cat:'java',         short:'JVM Deep Dive',  label:'JVM Deep Dive',               icon:IC.java,                docs:69,   url:'https://github.com/iq-dev-lab/jvm-deep-dive',               desc:'JVM 내부 구조 완전 해부 — 클래스 로딩·GC·JIT·메모리 모델, CPU 레벨 성능 분석'},
-
-  // Spring Ecosystem — Core → Data → Boot → MVC → Security → Batch → Cloud → WebFlux
-  {id:'sc',  cat:'spring',       short:'Spring Core',      label:'Spring Core Deep Dive',       icon:IC.spring, docs:51, url:'https://github.com/iq-dev-lab/spring-core-deep-dive',      desc:'IoC 컨테이너 완전 해부, DI 내부 동작, Bean 생명주기, AOP·Proxy 구현 원리'},
-  {id:'sd',  cat:'spring',       short:'Spring Data & Tx', label:'Spring Data & Transaction',   icon:IC.spring, docs:45, url:'https://github.com/iq-dev-lab/spring-data-transaction',    desc:'Spring Data JPA 내부 구조, 트랜잭션 관리, Hibernate 통합, 쿼리 성능 튜닝'},
-  {id:'sb',  cat:'spring',       short:'Spring Boot',      label:'Spring Boot Internals',       icon:IC.spring, docs:45, url:'https://github.com/iq-dev-lab/spring-boot-internals',      desc:'Auto-configuration 내부 동작, 스타트업 프로세스, Property 관리, Actuator'},
-  {id:'sm',  cat:'spring',       short:'Spring MVC',       label:'Spring MVC Deep Dive',        icon:IC.spring, docs:45, url:'https://github.com/iq-dev-lab/spring-mvc-deep-dive',       desc:'DispatcherServlet 완전 분해, HandlerMapping·Adapter, ArgumentResolver, Async'},
-  {id:'ss',  cat:'spring',       short:'Spring Security',  label:'Spring Security Deep Dive',   icon:IC.spring, docs:45, url:'https://github.com/iq-dev-lab/spring-security-deep-dive',  desc:'FilterChainProxy 완전 분해, JWT·SecurityContext, OAuth2 Authorization Code Flow'},
-  {id:'sba', cat:'spring',       short:'Spring Batch',     label:'Spring Batch Deep Dive',      icon:IC.spring, docs:35, url:'https://github.com/iq-dev-lab/spring-batch-deep-dive',     desc:'ChunkOrientedTasklet 완전 분해, ItemReader·Processor·Writer 체인, Partitioning'},
-  {id:'scl', cat:'spring',       short:'Spring Cloud',     label:'Spring Cloud Deep Dive',      icon:IC.spring, docs:40, url:'https://github.com/iq-dev-lab/spring-cloud-deep-dive',     desc:'분산 시스템 내부 — Config Server, Eureka, Gateway, Circuit Breaker, 분산 추적'},
-  {id:'swf', cat:'spring',       short:'WebFlux',          label:'Spring WebFlux Deep Dive',    icon:IC.spring, docs:40, url:'https://github.com/iq-dev-lab/spring-webflux-deep-dive',   desc:'Reactive Streams 스펙 완전 분해, Project Reactor Lazy Evaluation, Netty 아키텍처·epoll, R2DBC'},
-
-  // Architecture & Design — Patterns → DDD → CQRS+ES → MSA → System Design
-  {id:'arch',cat:'architecture', short:'Arch Patterns',   label:'Architecture Patterns Deep Dive', icon:IC_CUSTOM.archPatterns, docs:39, url:'https://github.com/iq-dev-lab/architecture-patterns-deep-dive', desc:'Layered → Hexagonal → Clean Architecture 완전 분해, DIP 기반 개선, Uncle Bob 4원칙, DDD·MSA 연계'},
-  {id:'ddd', cat:'architecture', short:'DDD',             label:'DDD Deep Dive',                   icon:IC_CUSTOM.ddd,          docs:43, url:'https://github.com/iq-dev-lab/ddd-deep-dive',                   desc:'Bounded Context 전략 설계, Aggregate·Value Object·Domain Event 완전 분해, Repository 패턴, 도메인 테스트 전략'},
-  {id:'cqrs',cat:'architecture', short:'CQRS + ES',       label:'CQRS + Event Sourcing Deep Dive', icon:IC_CUSTOM.cqrs,         docs:40, url:'https://github.com/iq-dev-lab/cqrs-event-sourcing-deep-dive',  desc:'CQS 원칙·비동기 Command 완전 분해, Event Store·Projection 원리, 이벤트 소싱 통합 흐름'},
-  {id:'msa', cat:'architecture', short:'MSA',             label:'MSA Deep Dive',                   icon:IC_CUSTOM.msa,          docs:41, url:'https://github.com/iq-dev-lab/msa-deep-dive',                   desc:'모놀리스→MSA 전환 원칙, Saga 분산 트랜잭션·보상 패턴, 서비스 경계 설계, Circuit Breaker 상태 전이'},
-  {id:'sys', cat:'architecture', short:'System Design',   label:'System Design Deep Dive',         icon:IC_CUSTOM.sysdesign,    docs:42, url:'https://github.com/iq-dev-lab/system-design-deep-dive',        desc:'대규모 시스템 설계 원칙, URL 단축기·YouTube·검색 자동완성·라이브 스트리밍 케이스 스터디'},
-
-  // Messaging & Streaming
-  {id:'kf',  cat:'messaging',    short:'Kafka',     label:'Kafka Deep Dive',     icon:IC.kafka,    docs:37, url:'https://github.com/iq-dev-lab/kafka-deep-dive',     desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리, Consumer Lag 진단', darkIcon:true},
-  {id:'rmq', cat:'messaging',    short:'RabbitMQ',  label:'RabbitMQ Deep Dive',  icon:IC.rabbitmq, docs:38, url:'https://github.com/iq-dev-lab/rabbitmq-deep-dive',   desc:'Exchange 라우팅 완전 분해, Quorum Queue 클러스터링, Outbox + Publisher Confirm 완전 보장 패턴'},
-
-  // Database — Internals first, then engines, then in-memory/search
-  {id:'dbi', cat:'database',     short:'DB Internals',   label:'Database Internals',         icon:IC_CUSTOM.dbInternals, docs:40, url:'https://github.com/iq-dev-lab/database-internals',    desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read, 격리 수준 완전 분해'},
-  {id:'my',  cat:'database',     short:'MySQL',          label:'MySQL Deep Dive',            icon:IC.mysql,              docs:38, url:'https://github.com/iq-dev-lab/mysql-deep-dive',       desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석'},
-  {id:'pg',  cat:'database',     short:'PostgreSQL',     label:'PostgreSQL Deep Dive',       icon:IC.postgres,           docs:41, url:'https://github.com/iq-dev-lab/postgresql-deep-dive',  desc:'MVCC·Dead Tuple·VACUUM 완전 분해, Serializable Snapshot Isolation, B-Tree Index-Only Scan, TOAST 내부 구조'},
-  {id:'re',  cat:'database',     short:'Redis',          label:'Redis Deep Dive',            icon:IC.redis,              docs:37, url:'https://github.com/iq-dev-lab/redis-deep-dive',       desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream'},
-  {id:'es',  cat:'database',     short:'Elasticsearch',  label:'Elasticsearch Deep Dive',    icon:IC.elastic,            docs:38, url:'https://github.com/iq-dev-lab/elasticsearch-deep-dive',desc:'Lucene 역색인 완전 분해, BM25 점수 계산, Shard·Replica 분산 구조, 실전 성능 튜닝'},
-
-  // Infrastructure — Linux → Network → Git → Docker → K8s → Observability
-  {id:'lnx', cat:'infra',        short:'Linux',         label:'Linux for Backend',          icon:IC.linux,    docs:38,   url:'https://github.com/iq-dev-lab/linux-for-backend-deep-dive', desc:'커널 I/O·메모리 관리 완전 분해, 프로세스·스레드·스케줄러, 시스템콜·epoll·시그널'},
-  {id:'net', cat:'infra',        short:'Network',       label:'Network Deep Dive',          icon:IC_CUSTOM.network, docs:37, url:'https://github.com/iq-dev-lab/network-deep-dive',     desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking'},
-  {id:'git', cat:'infra',        short:'Git',           label:'Git In-Depth',               icon:IC.git,      docs:null, url:'https://github.com/iq-dev-lab/git-in-depth',               desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅'},
-  {id:'doc', cat:'infra',        short:'Docker',        label:'Docker Deep Dive',           icon:IC.docker,   docs:null, url:'https://github.com/iq-dev-lab/docker-deep-dive',           desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅'},
-  {id:'k8s', cat:'infra',        short:'Kubernetes',    label:'Kubernetes Deep Dive',       icon:IC.k8s,      docs:40,   url:'https://github.com/iq-dev-lab/kubernetes-deep-dive',       desc:'Control Plane 완전 분해 — etcd·API Server·Scheduler·kubelet, Pod 스케줄링·HPA'},
-  {id:'obs', cat:'infra',        short:'Observability', label:'Observability Deep Dive',    icon:IC.grafana,  docs:35,   url:'https://github.com/iq-dev-lab/observability-deep-dive',    desc:'Java Agent 바이트코드 조작 원리, Prometheus 수집, OpenTelemetry 분산 추적, 실전 장애 진단'},
+  {id:'obj',cat:'java',       short:'Objects',        label:'오브젝트 (Objects)',           icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/object',                    desc:'코드로 이해하는 객체지향 설계, 역할·책임·협력 원칙 — OOP 사고방식의 시작점'},
+  {id:'mja',cat:'java',       short:'Modern Java',    label:'Modern Java in Action',       icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/modern-java-in-action',      desc:'자바 8+ 함수형 프로그래밍, 스트림 API, 람다, CompletableFuture'},
+  {id:'api',cat:'java',       short:'Java API Ref',   label:'Java API Reference',          icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/java-api-reference',         desc:'자바 표준 라이브러리 원리, 실무 패턴, 성능 최적화, 실행 가능한 예제'},
+  {id:'pat',cat:'java',       short:'Design Patterns',label:'Java Design Patterns',        icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/java-design-patterns',       desc:'47가지 디자인 패턴 — GoF·아키텍처·동시성 패턴, 실전 Before/After'},
+  {id:'tst',cat:'java',       short:'Unit Testing',   label:'Unit Testing',                icon:IC.junit,              docs:null,url:'https://github.com/iq-dev-lab/unit-testing',               desc:'단위 테스트 설계 원칙, Mocking 전략(Stub/Spy/Fake), 안티패턴 분석'},
+  {id:'con',cat:'java',       short:'Concurrency',    label:'Java Concurrency Deep Dive',  icon:IC.java,               docs:40,  url:'https://github.com/iq-dev-lab/java-concurrency-deep-dive',  desc:'JVM 락 메커니즘 완전 분해 — Mark Word·Biased/Thin/Fat Lock, CAS·AQS, 가상 스레드'},
+  {id:'jvm',cat:'java',       short:'JVM Deep Dive',  label:'JVM Deep Dive',               icon:IC.java,               docs:69,  url:'https://github.com/iq-dev-lab/jvm-deep-dive',               desc:'JVM 내부 구조 완전 해부 — 클래스 로딩·GC·JIT·메모리 모델, CPU 레벨 성능 분석'},
+  {id:'sc', cat:'spring',     short:'Spring Core',    label:'Spring Core Deep Dive',       icon:IC.spring,             docs:51,  url:'https://github.com/iq-dev-lab/spring-core-deep-dive',       desc:'IoC 컨테이너 완전 해부, DI 내부 동작, Bean 생명주기, AOP·Proxy 구현 원리'},
+  {id:'sd', cat:'spring',     short:'Spring Data&Tx', label:'Spring Data & Transaction',   icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-data-transaction',     desc:'Spring Data JPA 내부 구조, 트랜잭션 관리, Hibernate 통합, 쿼리 성능 튜닝'},
+  {id:'sb', cat:'spring',     short:'Spring Boot',    label:'Spring Boot Internals',       icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-boot-internals',       desc:'Auto-configuration 내부 동작, 스타트업 프로세스, Property 관리, Actuator'},
+  {id:'sm', cat:'spring',     short:'Spring MVC',     label:'Spring MVC Deep Dive',        icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-mvc-deep-dive',        desc:'DispatcherServlet 완전 분해, HandlerMapping·Adapter, ArgumentResolver, Async'},
+  {id:'ss', cat:'spring',     short:'Spring Security',label:'Spring Security Deep Dive',   icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-security-deep-dive',  desc:'FilterChainProxy 완전 분해, JWT·SecurityContext, OAuth2 Authorization Code Flow'},
+  {id:'sba',cat:'spring',     short:'Spring Batch',   label:'Spring Batch Deep Dive',      icon:IC.spring,             docs:35,  url:'https://github.com/iq-dev-lab/spring-batch-deep-dive',      desc:'ChunkOrientedTasklet 완전 분해, ItemReader·Processor·Writer 체인, Partitioning'},
+  {id:'scl',cat:'spring',     short:'Spring Cloud',   label:'Spring Cloud Deep Dive',      icon:IC.spring,             docs:40,  url:'https://github.com/iq-dev-lab/spring-cloud-deep-dive',      desc:'분산 시스템 내부 — Config Server, Eureka, Gateway, Circuit Breaker, 분산 추적'},
+  {id:'swf',cat:'spring',     short:'WebFlux',        label:'Spring WebFlux Deep Dive',    icon:IC.spring,             docs:40,  url:'https://github.com/iq-dev-lab/spring-webflux-deep-dive',    desc:'Reactive Streams 스펙 완전 분해, Project Reactor, Netty 아키텍처·epoll, R2DBC'},
+  {id:'arch',cat:'architecture',short:'Arch Patterns',label:'Architecture Patterns',       icon:IC_CUSTOM.archPatterns,docs:39,  url:'https://github.com/iq-dev-lab/architecture-patterns-deep-dive',desc:'Layered → Hexagonal → Clean Architecture 완전 분해, DIP 기반 개선, Uncle Bob 4원칙'},
+  {id:'ddd', cat:'architecture',short:'DDD',          label:'DDD Deep Dive',               icon:IC_CUSTOM.ddd,         docs:43,  url:'https://github.com/iq-dev-lab/ddd-deep-dive',               desc:'Bounded Context 전략 설계, Aggregate·Value Object·Domain Event, 도메인 테스트 전략'},
+  {id:'cqrs',cat:'architecture',short:'CQRS + ES',    label:'CQRS + Event Sourcing',       icon:IC_CUSTOM.cqrs,        docs:40,  url:'https://github.com/iq-dev-lab/cqrs-event-sourcing-deep-dive',desc:'CQS 원칙·비동기 Command 완전 분해, Event Store·Projection 원리, 이벤트 소싱 통합'},
+  {id:'msa', cat:'architecture',short:'MSA',          label:'MSA Deep Dive',               icon:IC_CUSTOM.msa,         docs:41,  url:'https://github.com/iq-dev-lab/msa-deep-dive',               desc:'모놀리스→MSA 전환 원칙, Saga 분산 트랜잭션·보상 패턴, 서비스 경계 설계, Circuit Breaker'},
+  {id:'sys', cat:'architecture',short:'System Design',label:'System Design Deep Dive',     icon:IC_CUSTOM.sysdesign,   docs:42,  url:'https://github.com/iq-dev-lab/system-design-deep-dive',     desc:'대규모 시스템 설계 원칙, URL 단축기·YouTube·검색 자동완성·라이브 스트리밍 케이스 스터디'},
+  {id:'kf', cat:'messaging',  short:'Kafka',          label:'Kafka Deep Dive',             icon:IC.kafka,              docs:37,  url:'https://github.com/iq-dev-lab/kafka-deep-dive',             desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리',darkIcon:true},
+  {id:'rmq',cat:'messaging',  short:'RabbitMQ',       label:'RabbitMQ Deep Dive',          icon:IC.rabbitmq,           docs:38,  url:'https://github.com/iq-dev-lab/rabbitmq-deep-dive',          desc:'Exchange 라우팅 완전 분해, Quorum Queue 클러스터링, Outbox + Publisher Confirm 보장 패턴'},
+  {id:'dbi',cat:'database',   short:'DB Internals',   label:'Database Internals',          icon:IC_CUSTOM.dbInternals, docs:40,  url:'https://github.com/iq-dev-lab/database-internals',          desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read'},
+  {id:'my', cat:'database',   short:'MySQL',          label:'MySQL Deep Dive',             icon:IC.mysql,              docs:38,  url:'https://github.com/iq-dev-lab/mysql-deep-dive',             desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석'},
+  {id:'pg', cat:'database',   short:'PostgreSQL',     label:'PostgreSQL Deep Dive',        icon:IC.postgres,           docs:41,  url:'https://github.com/iq-dev-lab/postgresql-deep-dive',        desc:'MVCC·Dead Tuple·VACUUM 완전 분해, Serializable Snapshot Isolation, Index-Only Scan'},
+  {id:'re', cat:'database',   short:'Redis',          label:'Redis Deep Dive',             icon:IC.redis,              docs:37,  url:'https://github.com/iq-dev-lab/redis-deep-dive',             desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream'},
+  {id:'es', cat:'database',   short:'Elasticsearch',  label:'Elasticsearch Deep Dive',     icon:IC.elastic,            docs:38,  url:'https://github.com/iq-dev-lab/elasticsearch-deep-dive',     desc:'Lucene 역색인 완전 분해, BM25 점수 계산, Shard·Replica 분산 구조, 실전 성능 튜닝'},
+  {id:'lnx',cat:'infra',      short:'Linux',          label:'Linux for Backend',           icon:IC.linux,              docs:38,  url:'https://github.com/iq-dev-lab/linux-for-backend-deep-dive', desc:'커널 I/O·메모리 관리 완전 분해, 프로세스·스레드·스케줄러, 시스템콜·epoll·시그널'},
+  {id:'net',cat:'infra',      short:'Network',        label:'Network Deep Dive',           icon:IC_CUSTOM.network,     docs:37,  url:'https://github.com/iq-dev-lab/network-deep-dive',           desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking'},
+  {id:'git',cat:'infra',      short:'Git',            label:'Git In-Depth',                icon:IC.git,                docs:null,url:'https://github.com/iq-dev-lab/git-in-depth',               desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅'},
+  {id:'doc',cat:'infra',      short:'Docker',         label:'Docker Deep Dive',            icon:IC.docker,             docs:null,url:'https://github.com/iq-dev-lab/docker-deep-dive',           desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅'},
+  {id:'k8s',cat:'infra',      short:'Kubernetes',     label:'Kubernetes Deep Dive',        icon:IC.k8s,                docs:40,  url:'https://github.com/iq-dev-lab/kubernetes-deep-dive',        desc:'Control Plane 완전 분해 — etcd·API Server·Scheduler·kubelet, Pod 스케줄링·HPA'},
+  {id:'obs',cat:'infra',      short:'Observability',  label:'Observability Deep Dive',     icon:IC.grafana,            docs:35,  url:'https://github.com/iq-dev-lab/observability-deep-dive',     desc:'Java Agent 바이트코드 조작 원리, Prometheus 수집, OpenTelemetry 분산 추적, 장애 진단'},
 ];
 
-// ── Layout constants ──────────────────────────────────────────────────
-const W=innerWidth, H=innerHeight, CX=W/2, CY=H/2;
+// ═══════════════════════════════════════════════
+//  LAYOUT
+// ═══════════════════════════════════════════════
+const W=innerWidth,H=innerHeight,CX=W/2,CY=H/2;
 const MIN_DIM=Math.min(W,H);
-const HUB_D=MIN_DIM*0.30;   // hub distance from center
-const NODE_R=16;             // repo node radius (reduced from 19 to provide spacing)
-
+const HUB_D=MIN_DIM*0.30;
+const NODE_R=16;
 function rad(d){return d*Math.PI/180;}
 
-// ── Build graph with per-category fan and repo distance ───────────────
 function buildGraph(){
   const nodes=[],links=[],byId={};
   const cn={id:'center',type:'center',x:CX,y:CY};
   nodes.push(cn);byId['center']=cn;
-
   Object.entries(CATS).forEach(([cat,meta])=>{
-    const hr=rad(meta.angle);
-    const hx=CX+HUB_D*Math.cos(hr), hy=CY+HUB_D*Math.sin(hr);
+    const hr=rad(meta.angle),hx=CX+HUB_D*Math.cos(hr),hy=CY+HUB_D*Math.sin(hr);
     const hId='hub-'+cat;
-    nodes.push({id:hId,type:'hub',cat,label:meta.label,x:hx,y:hy});
-    byId[hId]={id:hId,type:'hub',cat,x:hx,y:hy};
+    const hub={id:hId,type:'hub',cat,label:meta.label,x:hx,y:hy};
+    nodes.push(hub);byId[hId]=hub;
     links.push({s:'center',t:hId,hub:true});
-
-    const repoDist = MIN_DIM * meta.repoFactor;
-    const reps=REPOS.filter(r=>r.cat===cat), n=reps.length;
+    const repoDist=MIN_DIM*meta.repoFactor;
+    const reps=REPOS.filter(r=>r.cat===cat),n=reps.length;
     reps.forEach((repo,i)=>{
-      const half=(n-1)/2, step=n>1?meta.fan/(n-1):0;
+      const half=(n-1)/2,step=n>1?meta.fan/(n-1):0;
       const rr=rad(meta.angle+(i-half)*step);
-      const rx=hx+repoDist*Math.cos(rr), ry=hy+repoDist*Math.sin(rr);
-      const node={...repo,type:'repo',x:rx,y:ry};
-      nodes.push(node); byId[repo.id]=node;
-      links.push({s:hId,t:repo.id,hub:false});
+      const node={...repo,type:'repo',x:hx+repoDist*Math.cos(rr),y:hy+repoDist*Math.sin(rr)};
+      nodes.push(node);byId[repo.id]=node;
+      links.push({s:hId,t:repo.id,hub:false,cat});
     });
   });
   return{nodes,links,byId};
 }
-
 const{nodes,links,byId}=buildGraph();
+const repoNodes=nodes.filter(n=>n.type==='repo');
 
-// ── SVG + zoom ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  SVG SETUP
+// ═══════════════════════════════════════════════
 const svg=d3.select('#graph').attr('viewBox',`0 0 ${W} ${H}`);
 const root=svg.append('g');
 const zoom=d3.zoom().scaleExtent([.15,4.0]).on('zoom',e=>root.attr('transform',e.transform));
 svg.call(zoom);
-// Initial zoom: 0.52 so full graph (HUB_D+max_REPO_D ≈ 0.55*MIN_DIM from center) fits on screen
-svg.call(zoom.transform, d3.zoomIdentity.translate(W*(1-.52)/2, H*(1-.52)/2).scale(.52));
+svg.call(zoom.transform,d3.zoomIdentity.translate(W*(1-.52)/2,H*(1-.52)/2).scale(.52));
 
-// ── Defs ──────────────────────────────────────────────────────────────
+// defs
 const defs=svg.append('defs');
+
+// center glow gradient
 const rg=defs.append('radialGradient').attr('id','cglow').attr('cx','50%').attr('cy','50%').attr('r','50%');
-rg.append('stop').attr('offset','0%').attr('stop-color','#CBD5E1').attr('stop-opacity',.12);
+rg.append('stop').attr('offset','0%').attr('stop-color','#CBD5E1').attr('stop-opacity',.14);
 rg.append('stop').attr('offset','100%').attr('stop-color','#CBD5E1').attr('stop-opacity',0);
 
+// cursor aurora gradient
+const ag=defs.append('radialGradient').attr('id','aurora-grad').attr('cx','50%').attr('cy','50%').attr('r','50%');
+ag.append('stop').attr('offset','0%').attr('stop-color','#ffffff').attr('stop-opacity',.04);
+ag.append('stop').attr('offset','60%').attr('stop-color','#ffffff').attr('stop-opacity',.015);
+ag.append('stop').attr('offset','100%').attr('stop-color','#ffffff').attr('stop-opacity',0);
+
+// aurora blur filter
+const af=defs.append('filter').attr('id','aurora-blur').attr('x','-50%').attr('y','-50%').attr('width','200%').attr('height','200%');
+af.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','22');
+
+// per-category glow filters
 Object.keys(C).forEach(k=>{
   const f=defs.append('filter').attr('id',`gl-${k}`).attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
-  f.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','6').attr('result','blur');
+  f.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','7').attr('result','blur');
   const m=f.append('feMerge');
   m.append('feMergeNode').attr('in','blur');
   m.append('feMergeNode').attr('in','SourceGraphic');
 });
-REPOS.forEach(repo=>{
-  defs.append('clipPath').attr('id','clip-'+repo.id).append('circle').attr('r',NODE_R-2);
-});
 
-// ── Edges ─────────────────────────────────────────────────────────────
-root.append('g').selectAll('line').data(links).join('line')
+// clip paths
+REPOS.forEach(r=>{defs.append('clipPath').attr('id','clip-'+r.id).append('circle').attr('r',NODE_R-2);});
+
+// ═══════════════════════════════════════════════
+//  CURSOR AURORA (follows mouse in root space)
+// ═══════════════════════════════════════════════
+const auroraGroup=root.insert('g','*');
+const aurora=auroraGroup.append('circle')
+  .attr('r',120).attr('fill','url(#aurora-grad)')
+  .attr('filter','url(#aurora-blur)')
+  .attr('opacity',0).attr('pointer-events','none');
+
+// ═══════════════════════════════════════════════
+//  EDGES (base layer)
+// ═══════════════════════════════════════════════
+const baseEdgeG=root.append('g');
+baseEdgeG.selectAll('line').data(links).join('line')
+  .attr('class','base-edge')
   .attr('x1',d=>byId[d.s].x).attr('y1',d=>byId[d.s].y)
   .attr('x2',d=>byId[d.t].x).attr('y2',d=>byId[d.t].y)
   .attr('stroke',d=>{const n=byId[d.t];return n.cat?C[n.cat]:C.center;})
   .attr('stroke-width',d=>d.hub?1.4:1.0)
-  .attr('stroke-opacity',d=>d.hub?.48:.40)
+  .attr('stroke-opacity',d=>d.hub?.48:.38)
   .attr('stroke-dasharray',d=>d.hub?'none':'5,4')
   .style('opacity',0).transition().duration(1200).delay(600).style('opacity',1);
 
-// ── Nodes ─────────────────────────────────────────────────────────────
+// animated flow edge layer (shown on hover)
+const flowEdgeG=root.append('g').attr('pointer-events','none');
+
+// ═══════════════════════════════════════════════
+//  NODES
+// ═══════════════════════════════════════════════
 const nodeG=root.append('g').selectAll('g').data(nodes).join('g')
   .attr('transform',d=>`translate(${d.x},${d.y})`);
+
+// Store node group refs for proximity effects
+const nodeGMap={};
+nodeG.each(function(d){nodeGMap[d.id||d.type+d.cat]=this;});
+
+// ripple layer (top)
+const rippleG=root.append('g').attr('pointer-events','none');
 
 nodeG.each(function(d){
   const g=d3.select(this);
   const col=d.type==='center'?C.center:C[d.cat];
   const gid=d.type==='center'?'center':d.cat;
 
+  // ── CENTER ──────────────────────────────────
   if(d.type==='center'){
     g.append('circle').attr('r',75).attr('fill','url(#cglow)');
     g.append('circle').attr('r',56).attr('fill','none').attr('stroke',col).attr('stroke-opacity',.1).attr('stroke-width',1).attr('stroke-dasharray','4,7');
-    g.append('circle').attr('r',44).attr('fill','rgba(203,213,225,.05)').attr('stroke',col).attr('stroke-opacity',.42).attr('stroke-width',1.5).attr('filter',`url(#gl-${gid})`);
+    g.append('circle').attr('r',44).attr('fill','rgba(203,213,225,.05)').attr('stroke',col).attr('stroke-opacity',.42).attr('stroke-width',1.5).attr('filter',`url(#gl-center)`);
     g.append('text').attr('y',-6).attr('text-anchor','middle').attr('font-family','Bebas Neue,sans-serif').attr('font-size','21px').attr('letter-spacing','5px').attr('fill',col).attr('opacity',.88).text('IQ');
     g.append('text').attr('y',14).attr('text-anchor','middle').attr('font-family','Bebas Neue,sans-serif').attr('font-size','21px').attr('letter-spacing','5px').attr('fill',col).attr('opacity',.88).text('LAB');
     g.append('text').attr('y',31).attr('text-anchor','middle').attr('font-family','JetBrains Mono,monospace').attr('font-size','7.5px').attr('letter-spacing','3px').attr('fill',col).attr('opacity',.3).text('IQ DEV LAB');
 
+  // ── HUB ─────────────────────────────────────
   } else if(d.type==='hub'){
-    g.append('circle').attr('r',27).attr('fill',col+'14').attr('stroke',col).attr('stroke-opacity',.58).attr('stroke-width',1.3).attr('filter',`url(#gl-${gid})`);
-    const shorts={java:'Java',spring:'Spring',architecture:'Arch',messaging:'Messaging',database:'Database',infra:'Infra'};
-    g.append('text').attr('y',44).attr('text-anchor','middle').attr('font-family','JetBrains Mono,monospace').attr('font-size','9.5px').attr('letter-spacing','1.5px').attr('fill',col).attr('opacity',.72).text(shorts[d.cat]||d.cat);
+    // outer pulse ring (expands outward continuously)
+    g.append('circle').attr('class','hub-pulse-ring').attr('r',27)
+      .attr('fill','none').attr('stroke',col)
+      .attr('stroke-width',1.2).attr('stroke-opacity',0)
+      .attr('pointer-events','none');
 
+    // dual orbit ellipses (simulate 3-D ring)
+    const dur1=(9+Math.random()*6).toFixed(1)+'s';
+    const dur2=(14+Math.random()*8).toFixed(1)+'s';
+    g.append('ellipse').attr('class','hub-orbit-a').attr('rx',36).attr('ry',11)
+      .attr('fill','none').attr('stroke',col).attr('stroke-width',.8)
+      .attr('stroke-opacity',.28).attr('stroke-dasharray','3,5')
+      .style('--od',dur1).attr('pointer-events','none');
+    g.append('ellipse').attr('class','hub-orbit-b').attr('rx',28).attr('ry',9)
+      .attr('fill','none').attr('stroke',col).attr('stroke-width',.6)
+      .attr('stroke-opacity',.18).attr('stroke-dasharray','2,7')
+      .style('--od2',dur2).attr('pointer-events','none');
+
+    // main hub circle
+    g.append('circle').attr('r',27).attr('fill',col+'16')
+      .attr('stroke',col).attr('stroke-opacity',.6).attr('stroke-width',1.4)
+      .attr('filter',`url(#gl-${gid})`);
+
+    // label
+    const shorts={java:'Java',spring:'Spring',architecture:'Arch',messaging:'Messaging',database:'Database',infra:'Infra'};
+    g.append('text').attr('y',44).attr('text-anchor','middle')
+      .attr('font-family','JetBrains Mono,monospace').attr('font-size','9.5px')
+      .attr('letter-spacing','1.5px').attr('fill',col).attr('opacity',.72)
+      .text(shorts[d.cat]||d.cat);
+
+  // ── REPO NODE ────────────────────────────────
   } else {
     const r=NODE_R;
-    g.append('circle').attr('r',r).attr('fill',col+'22').attr('stroke',col).attr('stroke-opacity',.55).attr('stroke-width',1.2);
 
+    // proximity glow ring (inner) — always present, toggled by proximity
+    g.append('circle').attr('class','prox-ring').attr('r',r+7)
+      .attr('fill','none').attr('stroke',col)
+      .attr('stroke-width',1.5).attr('stroke-opacity',0)
+      .attr('pointer-events','none');
+
+    // hover ring (outer) — shown on hover
+    g.append('circle').attr('class','hover-ring').attr('r',r+14)
+      .attr('fill','none').attr('stroke',col)
+      .attr('stroke-width',1).attr('stroke-opacity',0)
+      .attr('pointer-events','none');
+
+    // main body
+    const body=g.append('circle').attr('class','node-body').attr('r',r)
+      .attr('fill',col+'22').attr('stroke',col)
+      .attr('stroke-opacity',.55).attr('stroke-width',1.3);
+
+    // dark-icon bg
+    if(d.darkIcon) g.append('circle').attr('r',r-2).attr('fill','rgba(255,255,255,.9)').attr('clip-path',`url(#clip-${d.id})`);
+
+    // icon
     if(d.icon){
-      if(d.darkIcon) g.append('circle').attr('r',r-2).attr('fill','rgba(255,255,255,.88)').attr('clip-path',`url(#clip-${d.id})`);
-      g.append('image')
-        .attr('href',d.icon)
+      g.append('image').attr('href',d.icon)
         .attr('x',-(r-2)).attr('y',-(r-2))
         .attr('width',(r-2)*2).attr('height',(r-2)*2)
         .attr('clip-path',`url(#clip-${d.id})`)
-        .attr('opacity',.65)
-        .attr('preserveAspectRatio','xMidYMid meet');
+        .attr('opacity',.65).attr('preserveAspectRatio','xMidYMid meet');
     }
 
-    // Label: push outward from hub
+    // label pushed outward
     const hub=byId['hub-'+d.cat];
-    const dx=d.x-hub.x, dy=d.y-hub.y, len=Math.sqrt(dx*dx+dy*dy)||1;
-    const nx=dx/len, ny=dy/len;
-    const lx=nx*(r+7), ly=ny*(r+7);
+    const dx=d.x-hub.x,dy=d.y-hub.y,len=Math.sqrt(dx*dx+dy*dy)||1;
+    const nx=dx/len,ny=dy/len;
+    const lx=nx*(r+7),ly=ny*(r+7);
     const anchor=Math.abs(nx)<.22?'middle':(nx>0?'start':'end');
-    g.append('text').attr('x',lx).attr('y',ly+4).attr('text-anchor',anchor)
+    g.append('text').attr('class','node-label').attr('x',lx).attr('y',ly+4)
+      .attr('text-anchor',anchor)
       .attr('font-family','JetBrains Mono,monospace').attr('font-size','9px')
       .attr('fill',col).attr('opacity',.72).text(d.short);
 
+    // interactions
     g.style('cursor','pointer')
-      .on('mouseenter',function(e,nd){
-        d3.select(this).select('circle').attr('stroke-opacity',1).attr('r',r+2.5).attr('filter',`url(#gl-${nd.cat})`);
-        d3.select(this).select('image').attr('opacity',1);
-        showTT(e,nd);
-      })
+      .on('mouseenter',function(e,nd){ onNodeEnter(e,nd,g); showTT(e,nd); })
       .on('mousemove',moveTT)
-      .on('mouseleave',function(e,nd){
-        d3.select(this).select('circle').attr('stroke-opacity',.55).attr('r',r).attr('filter',null);
-        d3.select(this).select('image').attr('opacity',.65);
-        hideTT();
-      })
-      .on('click',(e,nd)=>{if(nd.url)window.open(nd.url,'_blank');});
+      .on('mouseleave',function(e,nd){ onNodeLeave(nd,g); hideTT(); })
+      .on('click',(e,nd)=>{ spawnRipple(nd); if(nd.url)window.open(nd.url,'_blank'); });
   }
 });
 
 nodeG.style('opacity',0).transition().duration(800).delay((d,i)=>300+i*22).style('opacity',1);
 
-// ── Tooltip ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  HUB PULSE RING ANIMATION (ambient breathing)
+// ═══════════════════════════════════════════════
+function animHubPulse(){
+  nodeG.filter(d=>d.type==='hub').each(function(d){
+    const ring=d3.select(this).select('.hub-pulse-ring');
+    const col=C[d.cat];
+    const delay=Math.random()*3000;
+    function pulse(){
+      ring.attr('r',27).attr('stroke-opacity',.55)
+        .transition().duration(1800+Math.random()*600).ease(d3.easeSinOut)
+        .attr('r',56).attr('stroke-opacity',0)
+        .on('end',()=>setTimeout(pulse,600+Math.random()*1200));
+    }
+    setTimeout(pulse,delay);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  HOVER EFFECTS
+// ═══════════════════════════════════════════════
+let activeNode=null;
+
+function onNodeEnter(e,nd,g){
+  activeNode=nd.id;
+  const col=C[nd.cat];
+
+  // body scale + glow
+  g.select('.node-body').attr('r',NODE_R+3).attr('stroke-opacity',1)
+    .attr('filter',`url(#gl-${nd.cat})`).attr('fill',col+'44');
+  g.select('image').attr('opacity',1);
+
+  // inner ring brightens
+  g.select('.prox-ring').attr('stroke-opacity',.8).attr('r',NODE_R+6);
+
+  // outer hover ring
+  g.select('.hover-ring').attr('stroke-opacity',.45).attr('r',NODE_R+16);
+
+  // animated flow edges (hub→node + center→hub)
+  const hub=byId['hub-'+nd.cat];
+  flowEdgeG.selectAll('*').remove();
+  // hub→node
+  flowEdgeG.append('line').attr('class','flow-edge')
+    .attr('x1',hub.x).attr('y1',hub.y).attr('x2',nd.x).attr('y2',nd.y)
+    .attr('stroke',col).attr('stroke-width',2.2).attr('stroke-opacity',.9)
+    .attr('stroke-dasharray','8,6');
+  // center→hub
+  flowEdgeG.append('line').attr('class','flow-edge')
+    .attr('x1',CX).attr('y1',CY).attr('x2',hub.x).attr('y2',hub.y)
+    .attr('stroke',col).attr('stroke-width',1.5).attr('stroke-opacity',.5)
+    .attr('stroke-dasharray','6,5');
+
+  // dim all other categories
+  nodeG.each(function(dd){
+    if(dd.type==='repo'&&dd.cat!==nd.cat){
+      d3.select(this).transition().duration(180).style('opacity',.22);
+    }
+  });
+  // dim legend entries
+  document.querySelectorAll('.li').forEach(el=>{
+    el.style.opacity=(el.dataset.cat===nd.cat)?'1':'0.25';
+  });
+
+  // highlight own hub
+  const hubSel=nodeG.filter(d=>d.id==='hub-'+nd.cat);
+  hubSel.select('circle:last-of-type').attr('stroke-opacity',1).attr('filter',`url(#gl-${nd.cat})`);
+}
+
+function onNodeLeave(nd,g){
+  activeNode=null;
+  const col=C[nd.cat];
+  g.select('.node-body').attr('r',NODE_R).attr('stroke-opacity',.55)
+    .attr('filter',null).attr('fill',col+'22');
+  g.select('image').attr('opacity',.65);
+  g.select('.prox-ring').attr('stroke-opacity',0).attr('r',NODE_R+7);
+  g.select('.hover-ring').attr('stroke-opacity',0).attr('r',NODE_R+14);
+  flowEdgeG.selectAll('*').remove();
+
+  // restore all
+  nodeG.each(function(dd){
+    if(dd.type==='repo') d3.select(this).transition().duration(300).style('opacity',1);
+  });
+  document.querySelectorAll('.li').forEach(el=>el.style.opacity='1');
+
+  // restore hub
+  const hubSel=nodeG.filter(d=>d.id==='hub-'+nd.cat);
+  hubSel.select('circle:last-of-type').attr('stroke-opacity',.6).attr('filter',`url(#gl-${nd.cat})`);
+}
+
+// ── Click ripple ──────────────────────────────
+function spawnRipple(nd){
+  const col=C[nd.cat];
+  for(let i=0;i<3;i++){
+    const delay=i*120;
+    setTimeout(()=>{
+      const ring=rippleG.append('circle')
+        .attr('cx',nd.x).attr('cy',nd.y).attr('r',NODE_R+2)
+        .attr('fill','none').attr('stroke',col)
+        .attr('stroke-width',2-i*0.5).attr('stroke-opacity',.9);
+      ring.transition().duration(700).ease(d3.easeCubicOut)
+        .attr('r',NODE_R+50+i*18).attr('stroke-opacity',0)
+        .on('end',()=>ring.remove());
+    },delay);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PROXIMITY GLOW (distance-based, runs on RAF)
+// ═══════════════════════════════════════════════
+let mouseRootX=CX,mouseRootY=CY;
+
+svg.on('mousemove.prox',function(e){
+  const tr=d3.zoomTransform(svg.node());
+  mouseRootX=(e.clientX-tr.x)/tr.k;
+  mouseRootY=(e.clientY-tr.y)/tr.k;
+  // aurora follows
+  aurora.attr('cx',mouseRootX).attr('cy',mouseRootY).attr('opacity',1);
+});
+svg.on('mouseleave.prox',()=>{ aurora.attr('opacity',0); });
+
+function proxLoop(){
+  if(!activeNode){
+    const tr=d3.zoomTransform(svg.node());
+    const PROX=200/tr.k; // proximity radius in root space, scales with zoom
+    nodeG.each(function(d){
+      if(d.type!=='repo') return;
+      const dx=d.x-mouseRootX,dy=d.y-mouseRootY;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<PROX){
+        const t=Math.pow(1-dist/PROX,2);
+        const col=C[d.cat];
+        d3.select(this).select('.node-body')
+          .attr('stroke-opacity',.55+t*.45)
+          .attr('r',NODE_R+t*2.5)
+          .attr('filter',t>.35?`url(#gl-${d.cat})`:null);
+        d3.select(this).select('.prox-ring')
+          .attr('stroke-opacity',t*.55).attr('r',NODE_R+7+t*4);
+      } else {
+        d3.select(this).select('.node-body')
+          .attr('stroke-opacity',.55).attr('r',NODE_R).attr('filter',null);
+        d3.select(this).select('.prox-ring')
+          .attr('stroke-opacity',0).attr('r',NODE_R+7);
+      }
+    });
+  }
+  requestAnimationFrame(proxLoop);
+}
+
+// ═══════════════════════════════════════════════
+//  3-D PARALLAX TILT
+// ═══════════════════════════════════════════════
+let tRx=0,tRy=0,cRx=0,cRy=0;
+const graphInner=document.getElementById('graph-inner');
+
+document.addEventListener('mousemove',e=>{
+  tRx=(e.clientY/H-.5)*5;   // ±2.5°
+  tRy=(e.clientX/W-.5)*-5;
+});
+document.addEventListener('mouseleave',()=>{tRx=0;tRy=0;});
+
+function tiltLoop(){
+  cRx+=(tRx-cRx)*.055;
+  cRy+=(tRy-cRy)*.055;
+  if(Math.abs(cRx)>.005||Math.abs(cRy)>.005){
+    graphInner.style.transform=
+      `rotateX(${cRx.toFixed(3)}deg) rotateY(${cRy.toFixed(3)}deg)`;
+  }
+  requestAnimationFrame(tiltLoop);
+}
+
+// ═══════════════════════════════════════════════
+//  TOOLTIP
+// ═══════════════════════════════════════════════
 const tt=document.getElementById('tt');
 function showTT(e,d){
   const col=C[d.cat]||'';
@@ -319,19 +596,24 @@ function showTT(e,d){
   document.getElementById('tt-name').textContent=d.label;
   document.getElementById('tt-desc').textContent=d.desc||'';
   document.getElementById('tt-docs').textContent=d.docs?`📄 ${d.docs}개 문서`:'';
-  const lnk=document.getElementById('tt-link'); lnk.href=d.url||'#'; lnk.style.color=col;
-  moveTT(e); tt.style.opacity='1';
+  const lnk=document.getElementById('tt-link');lnk.href=d.url||'#';lnk.style.color=col;
+  moveTT(e);tt.style.opacity='1';
 }
 function moveTT(e){
-  let x=e.clientX+18, y=e.clientY-8;
-  if(x+278>innerWidth) x=e.clientX-278-10;
-  if(y+190>innerHeight) y=e.clientY-190;
-  tt.style.left=x+'px'; tt.style.top=y+'px';
+  let x=e.clientX+18,y=e.clientY-8;
+  if(x+278>innerWidth)x=e.clientX-278-10;
+  if(y+200>innerHeight)y=e.clientY-200;
+  tt.style.left=x+'px';tt.style.top=y+'px';
 }
 function hideTT(){tt.style.opacity='0';}
 
-// ── Intro fade ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  START ALL ANIMATIONS + INTRO
+// ═══════════════════════════════════════════════
 setTimeout(()=>{
+  animHubPulse();
+  proxLoop();
+  tiltLoop();
   const intro=document.getElementById('intro');
   intro.style.opacity='0';
   setTimeout(()=>intro.remove(),900);
