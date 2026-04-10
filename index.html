@@ -158,12 +158,12 @@ const IC={java:`${DI}/java/java-original.svg`,spring:`${DI}/spring/spring-origin
 const C={java:'#F59E0B',spring:'#22C55E',architecture:'#06B6D4',messaging:'#F97316',database:'#3B82F6',infra:'#A78BFA',center:'#CBD5E1'};
 
 const CATS={
-  java:         {label:'Java Core',              angle:270,fan:68,repoFactor:0.25},
-  spring:       {label:'Spring Ecosystem',       angle:330,fan:68,repoFactor:0.25},
-  architecture: {label:'Architecture & Design',  angle:30, fan:60,repoFactor:0.22},
+  java:         {label:'Java Core',              angle:270,fan:80,repoFactor:0.28},
+  spring:       {label:'Spring Ecosystem',       angle:330,fan:88,repoFactor:0.32},
+  architecture: {label:'Architecture & Design',  angle:30, fan:65,repoFactor:0.24},
   messaging:    {label:'Messaging & Streaming',  angle:90, fan:42,repoFactor:0.20},
-  database:     {label:'Database',               angle:150,fan:60,repoFactor:0.22},
-  infra:        {label:'Infrastructure & DevOps',angle:210,fan:64,repoFactor:0.23},
+  database:     {label:'Database',               angle:150,fan:68,repoFactor:0.24},
+  infra:        {label:'Infrastructure & DevOps',angle:210,fan:75,repoFactor:0.26},
 };
 
 const REPOS=[
@@ -442,8 +442,12 @@ function onNodeEnter(e,nd,g){
   activeNode=nd.id;
   const col=C[nd.cat];
 
-  // body scale + glow
-  g.select('.node-body').attr('r',NODE_R+3).attr('stroke-opacity',1)
+  // scale entire node group (icon + rings + label all grow together)
+  g.transition().duration(160).ease(d3.easeBackOut.overshoot(1.4))
+    .attr('transform',`translate(${nd.x},${nd.y}) scale(1.42)`);
+
+  // body glow
+  g.select('.node-body').attr('stroke-opacity',1)
     .attr('filter',`url(#gl-${nd.cat})`).attr('fill',col+'44');
   g.select('image').attr('opacity',1);
 
@@ -486,6 +490,11 @@ function onNodeEnter(e,nd,g){
 function onNodeLeave(nd,g){
   activeNode=null;
   const col=C[nd.cat];
+
+  // restore scale
+  g.transition().duration(200).ease(d3.easeCubicOut)
+    .attr('transform',`translate(${nd.x},${nd.y}) scale(1)`);
+
   g.select('.node-body').attr('r',NODE_R).attr('stroke-opacity',.55)
     .attr('filter',null).attr('fill',col+'22');
   g.select('image').attr('opacity',.65);
