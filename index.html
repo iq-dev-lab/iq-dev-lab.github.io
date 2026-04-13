@@ -857,7 +857,7 @@ const{nodes,links,byId}=buildGraph();
 // ═══════════════════════════════════════════════
 //  SVG SETUP
 // ═══════════════════════════════════════════════
-const svg=d3.select('#graph').attr('viewBox','578 289 2011 2008');
+const svg=d3.select('#graph').attr('viewBox','637 359 1884 1880');
 const root=svg.append('g');
 // Zoom for user interaction only — initial position handled by viewBox+preserveAspectRatio
 const zoom=d3.zoom().scaleExtent([.08,4.0]).on('zoom',e=>root.attr('transform',e.transform));
@@ -1017,72 +1017,127 @@ function animHubPulse(){
 let activeNode=null;
 
 function onNodeEnter(e,nd,g){
+  if(rmOpen) return;  // 로드맵 패널 열려있을 때 마인드맵 호버 비활성
   activeNode=nd.id;
   const col=C[nd.cat];
-  g.transition().duration(160).ease(d3.easeBackOut.overshoot(1.4))
-    .attr('transform',`translate(${nd.x},${nd.y}) scale(1.42)`);
-  g.select('.node-body').attr('stroke-opacity',1)
-    .attr('filter',`url(#gl-${nd.cat})`).attr('fill',col+'44');
-  g.select('image').attr('opacity',1);
-  g.select('.prox-ring').attr('stroke-opacity',.8).attr('r',NODE_R+6);
-  g.select('.hover-ring').attr('stroke-opacity',.45).attr('r',NODE_R+16);
 
+  // ── 노드 자체 강조 ──────────────────────────────────────────────────
+  g.transition().duration(180).ease(d3.easeBackOut.overshoot(1.6))
+    .attr('transform',`translate(${nd.x},${nd.y}) scale(1.55)`);
+
+  g.select('.node-body')
+    .attr('stroke-opacity',1)
+    .attr('filter',`url(#gl-${nd.cat})`)
+    .attr('fill', col+'55')
+    .attr('stroke-width', 2);
+
+  g.select('image').attr('opacity',1);
+
+  // 내부 링 강조
+  g.select('.prox-ring')
+    .attr('stroke-opacity',.9)
+    .attr('stroke-width', 2)
+    .attr('r', NODE_R+8);
+
+  // 외부 링 강조
+  g.select('.hover-ring')
+    .attr('stroke-opacity',.55)
+    .attr('r', NODE_R+20);
+
+  // ── 허브 강조 ───────────────────────────────────────────────────────
+  const hubSel = nodeG.filter(d=>d.id==='hub-'+nd.cat);
+  hubSel.select('circle:last-of-type')
+    .attr('stroke-opacity',1)
+    .attr('filter',`url(#gl-${nd.cat})`);
+
+  // ── 흐름 엣지 (중심→허브→노드) ─────────────────────────────────────
   const hub=byId['hub-'+nd.cat];
   flowEdgeG.selectAll('*').remove();
-  flowEdgeG.append('line').attr('class','flow-edge')
-    .attr('x1',hub.x).attr('y1',hub.y).attr('x2',nd.x).attr('y2',nd.y)
-    .attr('stroke',col).attr('stroke-width',2.2).attr('stroke-opacity',.9)
-    .attr('stroke-dasharray','8,6');
-  flowEdgeG.append('line').attr('class','flow-edge')
-    .attr('x1',CX).attr('y1',CY).attr('x2',hub.x).attr('y2',hub.y)
-    .attr('stroke',col).attr('stroke-width',1.5).attr('stroke-opacity',.5)
-    .attr('stroke-dasharray','6,5');
+  if(hub){
+    // 허브→노드
+    flowEdgeG.append('line').attr('class','flow-edge')
+      .attr('x1',hub.x).attr('y1',hub.y).attr('x2',nd.x).attr('y2',nd.y)
+      .attr('stroke',col).attr('stroke-width',2.8).attr('stroke-opacity',.95)
+      .attr('stroke-dasharray','10,6');
+    // 중심→허브
+    flowEdgeG.append('line').attr('class','flow-edge')
+      .attr('x1',CX).attr('y1',CY).attr('x2',hub.x).attr('y2',hub.y)
+      .attr('stroke',col).attr('stroke-width',1.8).attr('stroke-opacity',.55)
+      .attr('stroke-dasharray','6,5');
+    // 글로우 서클 (허브 위에)
+    flowEdgeG.append('circle')
+      .attr('cx',hub.x).attr('cy',hub.y).attr('r',32)
+      .attr('fill','none').attr('stroke',col)
+      .attr('stroke-width',.8).attr('stroke-opacity',.3)
+      .attr('filter',`url(#gl-${nd.cat})`);
+  }
 
+  // ── 다른 카테고리 dim ───────────────────────────────────────────────
   nodeG.each(function(dd){
-    if(dd.type==='repo'&&dd.cat!==nd.cat){
-      d3.select(this).transition().duration(180).style('opacity',.18);
+    if(dd.type==='repo' && dd.cat!==nd.cat){
+      d3.select(this).transition().duration(200).style('opacity',.12);
+    }
+    if(dd.type==='hub' && dd.cat!==nd.cat){
+      d3.select(this).transition().duration(200).style('opacity',.15);
     }
   });
+
+  // ── 레전드 강조 ─────────────────────────────────────────────────────
   document.querySelectorAll('.li').forEach(el=>{
-    el.style.opacity=(el.dataset.cat===nd.cat)?'1':'0.2';
+    el.style.opacity=(el.dataset.cat===nd.cat)?'1':'0.15';
   });
-  const hubSel=nodeG.filter(d=>d.id==='hub-'+nd.cat);
-  hubSel.select('circle:last-of-type').attr('stroke-opacity',1).attr('filter',`url(#gl-${nd.cat})`);
 }
 
 function onNodeLeave(nd,g){
   activeNode=null;
   const col=C[nd.cat];
-  g.transition().duration(200).ease(d3.easeCubicOut)
+
+  g.transition().duration(220).ease(d3.easeCubicOut)
     .attr('transform',`translate(${nd.x},${nd.y}) scale(1)`);
-  g.select('.node-body').attr('r',NODE_R).attr('stroke-opacity',.55)
-    .attr('filter',null).attr('fill',col+'22');
+  g.select('.node-body')
+    .attr('r',NODE_R).attr('stroke-opacity',.55)
+    .attr('filter',null).attr('fill',col+'22').attr('stroke-width',1.3);
   g.select('image').attr('opacity',.65);
-  g.select('.prox-ring').attr('stroke-opacity',0).attr('r',NODE_R+7);
+  g.select('.prox-ring').attr('stroke-opacity',0).attr('r',NODE_R+7).attr('stroke-width',1.5);
   g.select('.hover-ring').attr('stroke-opacity',0).attr('r',NODE_R+14);
+
   flowEdgeG.selectAll('*').remove();
+
   nodeG.each(function(dd){
-    if(dd.type==='repo') d3.select(this).transition().duration(300).style('opacity',1);
+    d3.select(this).transition().duration(250).style('opacity',1);
   });
   document.querySelectorAll('.li').forEach(el=>el.style.opacity='1');
+
   const hubSel=nodeG.filter(d=>d.id==='hub-'+nd.cat);
   hubSel.select('circle:last-of-type').attr('stroke-opacity',.6).attr('filter',`url(#gl-${nd.cat})`);
 }
 
 function spawnRipple(nd){
   const col=C[nd.cat];
-  for(let i=0;i<3;i++){
-    const delay=i*120;
+  // 3겹 파문 — 크기와 속도 다르게
+  const waves=[
+    {delay:0,   r0:NODE_R+2, r1:NODE_R+65, dur:650, w:2.2, op:.95},
+    {delay:110, r0:NODE_R+2, r1:NODE_R+90, dur:800, w:1.5, op:.7},
+    {delay:220, r0:NODE_R+2, r1:NODE_R+120,dur:950, w:1.0, op:.5},
+  ];
+  waves.forEach(wave=>{
     setTimeout(()=>{
       const ring=rippleG.append('circle')
-        .attr('cx',nd.x).attr('cy',nd.y).attr('r',NODE_R+2)
+        .attr('cx',nd.x).attr('cy',nd.y).attr('r',wave.r0)
         .attr('fill','none').attr('stroke',col)
-        .attr('stroke-width',2-i*0.5).attr('stroke-opacity',.9);
-      ring.transition().duration(700).ease(d3.easeCubicOut)
-        .attr('r',NODE_R+50+i*18).attr('stroke-opacity',0)
+        .attr('stroke-width',wave.w).attr('stroke-opacity',wave.op);
+      ring.transition().duration(wave.dur).ease(d3.easeCubicOut)
+        .attr('r',wave.r1).attr('stroke-opacity',0)
         .on('end',()=>ring.remove());
-    },delay);
-  }
+    }, wave.delay);
+  });
+  // 중앙 플래시
+  const flash=rippleG.append('circle')
+    .attr('cx',nd.x).attr('cy',nd.y).attr('r',NODE_R-2)
+    .attr('fill',col).attr('opacity',.35);
+  flash.transition().duration(300).ease(d3.easeCubicOut)
+    .attr('r',NODE_R+4).attr('opacity',0)
+    .on('end',()=>flash.remove());
 }
 
 // ═══════════════════════════════════════════════
@@ -1099,26 +1154,33 @@ svg.on('mousemove.prox',function(e){
 svg.on('mouseleave.prox',()=>{ aurora.attr('opacity',0); });
 
 function proxLoop(){
-  if(!activeNode){
+  if(!activeNode && !rmOpen){
     const tr=d3.zoomTransform(svg.node());
-    const PROX=200/tr.k;
+    const PROX=260/tr.k;   // 감지 반경 더 넓게
     nodeG.each(function(d){
       if(d.type!=='repo') return;
-      const dx=d.x-mouseRootX,dy=d.y-mouseRootY;
+      const dx=d.x-mouseRootX, dy=d.y-mouseRootY;
       const dist=Math.sqrt(dx*dx+dy*dy);
       if(dist<PROX){
-        const t=Math.pow(1-dist/PROX,2);
+        const t=Math.pow(1-dist/PROX, 1.8);  // 감도 곡선
         const col=C[d.cat];
         d3.select(this).select('.node-body')
-          .attr('stroke-opacity',.55+t*.45).attr('r',NODE_R+t*2.5)
-          .attr('filter',t>.35?`url(#gl-${d.cat})`:null);
+          .attr('stroke-opacity', .55+t*.65)
+          .attr('r', NODE_R+t*4)
+          .attr('fill', col+(Math.round(t*50).toString(16).padStart(2,'0')))
+          .attr('filter', t>.25 ? `url(#gl-${d.cat})` : null);
         d3.select(this).select('.prox-ring')
-          .attr('stroke-opacity',t*.55).attr('r',NODE_R+7+t*4);
+          .attr('stroke-opacity', t*.75)
+          .attr('r', NODE_R+7+t*7);
+        d3.select(this).select('image')
+          .attr('opacity', .65+t*.35);
       } else {
         d3.select(this).select('.node-body')
-          .attr('stroke-opacity',.55).attr('r',NODE_R).attr('filter',null);
+          .attr('stroke-opacity',.55).attr('r',NODE_R)
+          .attr('fill',C[d.cat]+'22').attr('filter',null);
         d3.select(this).select('.prox-ring')
           .attr('stroke-opacity',0).attr('r',NODE_R+7);
+        d3.select(this).select('image').attr('opacity',.65);
       }
     });
   }
