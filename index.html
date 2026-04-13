@@ -1228,6 +1228,7 @@ function tiltLoop(){
 // ═══════════════════════════════════════════════
 const tt=document.getElementById('tt');
 function showTT(e,d){
+  if(innerWidth<=768) return;  // 모바일: hover 없으므로 툴팁 비활성
   const col=C[d.cat]||'';
   document.getElementById('tt-cat').style.color=col;
   document.getElementById('tt-cat').textContent=CATS[d.cat]?.label||'';
