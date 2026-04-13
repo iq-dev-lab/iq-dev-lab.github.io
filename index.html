@@ -8,7 +8,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <style>
-    :root{--bg:#07090f;--surface:#0c1120;--java:#F59E0B;--spring:#22C55E;--database:#3B82F6;--messaging:#F97316;--infra:#A78BFA;--architecture:#06B6D4;--center:#CBD5E1;--muted:#4A5568}
+    :root{
+      --bg:#07090f;--surface:#0c1120;
+      --java:#F59E0B;--spring:#22C55E;--database:#3B82F6;--messaging:#F97316;
+      --infra:#A78BFA;--architecture:#06B6D4;--api:#38BDF8;--security:#F43F5E;
+      --performance:#34D399;
+      --center:#CBD5E1;--muted:#4A5568
+    }
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Noto Sans KR',sans-serif}
     #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
@@ -22,17 +28,12 @@
     /* ── Hub orbit ring animation ── */
     @keyframes orbit{to{transform:rotate(360deg)}}
     @keyframes orbit-rev{to{transform:rotate(-360deg)}}
-    @keyframes hub-breath{0%,100%{r:27;opacity:.58}50%{r:31;opacity:.9}}
     .hub-orbit-a{animation:orbit var(--od,11s) linear infinite;transform-box:fill-box;transform-origin:center}
     .hub-orbit-b{animation:orbit-rev var(--od2,17s) linear infinite;transform-box:fill-box;transform-origin:center}
 
     /* ── Edge flow animation ── */
     @keyframes dash-flow{to{stroke-dashoffset:-28}}
     .flow-edge{animation:dash-flow .7s linear infinite;pointer-events:none}
-
-    /* ── Node ring pulse on hover ── */
-    @keyframes ring-burst{0%{r:18;stroke-opacity:.9}100%{r:52;stroke-opacity:0}}
-    .burst-ring{animation:ring-burst .7s ease-out forwards;pointer-events:none}
 
     /* ── Shooting star ── */
     @keyframes shoot{0%{opacity:0;stroke-dashoffset:0}10%{opacity:1}90%{opacity:1}100%{opacity:0;stroke-dashoffset:-220}}
@@ -47,10 +48,13 @@
     .h-stats{margin-left:auto;display:flex;gap:24px}
     .stat-n{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--center);line-height:1;text-align:center}
     .stat-l{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-align:center}
+
     #legend{position:fixed;bottom:26px;left:36px;z-index:20;display:flex;flex-direction:column;gap:6px}
     .li{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);transition:opacity .3s}
     .ld{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
     #hint{position:fixed;bottom:26px;right:36px;z-index:20;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted);text-align:right;line-height:1.9}
+
     #tt{position:fixed;z-index:50;pointer-events:none;opacity:0;transition:opacity .15s;max-width:272px;min-width:214px}
     .ttb{background:rgba(12,17,32,.96);backdrop-filter:blur(12px);border-radius:12px;padding:15px 17px;border:1px solid rgba(255,255,255,.09);box-shadow:0 0 32px rgba(0,0,0,.5)}
     #tt-cat{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
@@ -60,6 +64,7 @@
     #tt-docs{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted)}
     #tt-link{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-decoration:none;transition:opacity .15s}
     #tt-link:hover{opacity:.7}
+
     #intro{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .9s}
     .intro-title{font-family:'Bebas Neue',sans-serif;font-size:80px;letter-spacing:14px;color:var(--center);text-align:center}
     .intro-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:3px;text-align:center;margin-top:8px}
@@ -74,8 +79,9 @@
   <div class="h-sep"></div>
   <div class="h-desc"><em>왜?</em> 라는 질문으로 내부를 끝까지 파헤치는<br>개발자의 딥다이브 연구소</div>
   <div class="h-stats">
-    <div><div class="stat-n">33</div><div class="stat-l">repos</div></div>
-    <div><div class="stat-n">1,000+</div><div class="stat-l">docs</div></div>
+    <div><div class="stat-n">38</div><div class="stat-l">repos</div></div>
+    <div><div class="stat-n">1,200+</div><div class="stat-l">docs</div></div>
+    <div><div class="stat-n">9</div><div class="stat-l">domains</div></div>
   </div>
 </header>
 
@@ -88,12 +94,15 @@
 <div id="tt"><div class="ttb"><div id="tt-cat"></div><div id="tt-name"></div><div id="tt-desc"></div><div class="ttf"><div id="tt-docs"></div><a id="tt-link" href="#" target="_blank">GitHub →</a></div></div></div>
 
 <div id="legend">
-  <div class="li" data-cat="java">    <div class="ld" style="background:#F59E0B"></div>Java Core</div>
-  <div class="li" data-cat="spring">  <div class="ld" style="background:#22C55E"></div>Spring Ecosystem</div>
-  <div class="li" data-cat="architecture"><div class="ld" style="background:#06B6D4"></div>Architecture & Design</div>
-  <div class="li" data-cat="messaging"><div class="ld" style="background:#F97316"></div>Messaging & Streaming</div>
-  <div class="li" data-cat="database"><div class="ld" style="background:#3B82F6"></div>Database</div>
-  <div class="li" data-cat="infra">   <div class="ld" style="background:#A78BFA"></div>Infrastructure & DevOps</div>
+  <div class="li" data-cat="java">        <div class="ld" style="background:#F59E0B"></div>Java Core</div>
+  <div class="li" data-cat="spring">      <div class="ld" style="background:#22C55E"></div>Spring Ecosystem</div>
+  <div class="li" data-cat="architecture"><div class="ld" style="background:#06B6D4"></div>Architecture &amp; Design</div>
+  <div class="li" data-cat="infra">       <div class="ld" style="background:#A78BFA"></div>Infrastructure &amp; DevOps</div>
+  <div class="li" data-cat="database">    <div class="ld" style="background:#3B82F6"></div>Database</div>
+  <div class="li" data-cat="messaging">   <div class="ld" style="background:#F97316"></div>Messaging &amp; Streaming</div>
+  <div class="li" data-cat="api">         <div class="ld" style="background:#38BDF8"></div>API &amp; Communication</div>
+  <div class="li" data-cat="security">    <div class="ld" style="background:#F43F5E"></div>Security Engineering</div>
+  <div class="li" data-cat="performance"> <div class="ld" style="background:#34D399"></div>Performance &amp; Quality</div>
 </div>
 <div id="hint">scroll · zoom<br>drag · pan<br>click · open</div>
 
@@ -109,19 +118,17 @@
     S=Array.from({length:220},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.1+.15,a:Math.random()*.5+.08,da:(Math.random()-.5)*.003}));
   }
   function addShoot(){
-    const angle=Math.random()*0.4+0.1; // roughly diagonal
+    const angle=Math.random()*0.4+0.1;
     shoots.push({x:Math.random()*c.width,y:Math.random()*c.height*0.5,vx:Math.cos(angle)*14,vy:Math.sin(angle)*14,life:1,tail:[]});
     setTimeout(addShoot, 4000+Math.random()*6000);
   }
   function draw(){
     ctx.clearRect(0,0,c.width,c.height);
-    // twinkle stars
     S.forEach(s=>{
       ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
       ctx.fillStyle=`rgba(255,255,255,${Math.max(.04,Math.min(.65,s.a)).toFixed(2)})`;
       ctx.fill();s.a+=s.da;if(s.a>.6||s.a<.05)s.da*=-1;
     });
-    // shooting stars
     shoots.forEach((sh,i)=>{
       sh.tail.push({x:sh.x,y:sh.y});if(sh.tail.length>18)sh.tail.shift();
       sh.x+=sh.vx;sh.y+=sh.vy;sh.life-=0.018;
@@ -139,67 +146,202 @@
 })();
 
 // ═══════════════════════════════════════════════
-//  ICONS
+//  ICONS — DevIcon CDN + custom SVG
 // ═══════════════════════════════════════════════
 function svgIcon(s){return'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);}
-const A='#06B6D4';
+const A='#06B6D4'; // architecture accent (reused in custom icons)
+
 const IC_CUSTOM={
   network:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="8" width="11" height="48" rx="3" fill="#A78BFA" opacity="0.85"/><rect x="50" y="8" width="11" height="48" rx="3" fill="#A78BFA" opacity="0.85"/><line x1="14" y1="20" x2="50" y2="28" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/><polygon points="47,25 52,31 45,32" fill="#A78BFA"/><line x1="50" y1="38" x2="14" y2="46" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/><polygon points="17,43 12,49 19,50" fill="#A78BFA" opacity="0.8"/></svg>`),
+
   dbInternals:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="8" y="5" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5"/><rect x="8" y="25" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.75"/><rect x="8" y="45" width="48" height="15" rx="3" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.45"/><circle cx="32" cy="12" r="4" fill="#3B82F6"/><line x1="26" y1="20" x2="21" y2="25" stroke="#3B82F6" stroke-width="2" opacity="0.8"/><line x1="38" y1="20" x2="43" y2="25" stroke="#3B82F6" stroke-width="2" opacity="0.8"/><circle cx="20" cy="32" r="4" fill="#3B82F6" opacity="0.85"/><circle cx="44" cy="32" r="4" fill="#3B82F6" opacity="0.85"/></svg>`),
+
   archPatterns:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><polygon points="32,3 59,18.5 59,45.5 32,61 5,45.5 5,18.5" fill="none" stroke="${A}" stroke-width="2.5"/><polygon points="32,13 51,24 51,46 32,55 13,46 13,24" fill="none" stroke="${A}" stroke-width="2" opacity="0.62"/><polygon points="32,24 43.5,30.5 43.5,43.5 32,50 20.5,43.5 20.5,30.5" fill="${A}" fill-opacity="0.18" stroke="${A}" stroke-width="1.5" opacity="0.42"/></svg>`),
+
   ddd:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="4" width="26" height="26" rx="4" fill="none" stroke="${A}" stroke-width="2.5"/><rect x="34" y="4" width="26" height="26" rx="4" fill="none" stroke="${A}" stroke-width="2" opacity="0.68"/><rect x="19" y="34" width="26" height="26" rx="4" fill="${A}" fill-opacity="0.16" stroke="${A}" stroke-width="2"/><circle cx="17" cy="17" r="5" fill="${A}" opacity="0.32"/><circle cx="47" cy="17" r="5" fill="${A}" opacity="0.22"/><circle cx="32" cy="47" r="5" fill="${A}" opacity="0.42"/></svg>`),
+
   cqrs:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="6" width="25" height="13" rx="3" fill="none" stroke="${A}" stroke-width="2.2"/><rect x="36" y="6" width="25" height="13" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.62"/><line x1="32" y1="3" x2="32" y2="61" stroke="${A}" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.35"/><line x1="15.5" y1="19" x2="15.5" y2="31" stroke="${A}" stroke-width="2" opacity="0.72"/><polygon points="11,30 15.5,37 20,30" fill="${A}" opacity="0.72"/><line x1="48.5" y1="19" x2="48.5" y2="31" stroke="${A}" stroke-width="2" opacity="0.48"/><polygon points="44,30 48.5,37 53,30" fill="${A}" opacity="0.48"/><rect x="3" y="39" width="25" height="13" rx="3" fill="${A}" fill-opacity="0.16" stroke="${A}" stroke-width="2"/><rect x="36" y="39" width="25" height="13" rx="3" fill="${A}" fill-opacity="0.1" stroke="${A}" stroke-width="1.5" opacity="0.48"/></svg>`),
+
   msa:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="7.5" fill="${A}" fill-opacity="0.22" stroke="${A}" stroke-width="2.2"/><circle cx="32" cy="7" r="5.5" fill="none" stroke="${A}" stroke-width="2"/><circle cx="55" cy="20" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.85"/><circle cx="55" cy="44" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.72"/><circle cx="32" cy="57" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.62"/><circle cx="9" cy="44" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.72"/><circle cx="9" cy="20" r="5.5" fill="none" stroke="${A}" stroke-width="2" opacity="0.85"/><line x1="32" y1="12.5" x2="32" y2="24.5" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="49.8" y1="23" x2="38.8" y2="28" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="49.8" y1="41" x2="38.8" y2="36" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="32" y1="51.5" x2="32" y2="39.5" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="14.2" y1="41" x2="25.2" y2="36" stroke="${A}" stroke-width="1.5" opacity="0.5"/><line x1="14.2" y1="23" x2="25.2" y2="28" stroke="${A}" stroke-width="1.5" opacity="0.5"/></svg>`),
+
   sysdesign:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="22" width="16" height="20" rx="3" fill="none" stroke="${A}" stroke-width="2.2"/><rect x="24" y="4" width="16" height="14" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.85"/><rect x="44" y="22" width="16" height="20" rx="3" fill="none" stroke="${A}" stroke-width="2.2" opacity="0.75"/><rect x="24" y="46" width="16" height="14" rx="3" fill="${A}" fill-opacity="0.18" stroke="${A}" stroke-width="2"/><line x1="20" y1="32" x2="24" y2="32" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="40" y1="32" x2="44" y2="32" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="32" y1="18" x2="32" y2="22" stroke="${A}" stroke-width="2" opacity="0.6"/><line x1="32" y1="42" x2="32" y2="46" stroke="${A}" stroke-width="2" opacity="0.6"/><circle cx="12" cy="32" r="3.5" fill="${A}" opacity="0.48"/><circle cx="52" cy="32" r="3.5" fill="${A}" opacity="0.38"/><circle cx="32" cy="11" r="3.5" fill="${A}" opacity="0.52"/><circle cx="32" cy="53" r="3.5" fill="${A}" opacity="0.58"/></svg>`),
+
+  // ── NEW ICONS ───────────────────────────────────────────────────────────
+
+  // gRPC: protobuf TLV wire — tag|length|value bars + bidirectional arrows
+  grpc:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect x="4" y="10" width="12" height="44" rx="2.5" fill="#38BDF8" opacity="0.9"/>
+    <rect x="20" y="18" width="24" height="8" rx="2" fill="#38BDF8" opacity="0.75"/>
+    <rect x="20" y="30" width="16" height="8" rx="2" fill="#38BDF8" opacity="0.55"/>
+    <rect x="20" y="42" width="20" height="8" rx="2" fill="#38BDF8" opacity="0.38"/>
+    <line x1="48" y1="16" x2="60" y2="22" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round"/>
+    <polygon points="57,19 62,25 55,26" fill="#38BDF8"/>
+    <line x1="60" y1="38" x2="48" y2="44" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" opacity="0.7"/>
+    <polygon points="51,41 46,47 53,48" fill="#38BDF8" opacity="0.7"/>
+  </svg>`),
+
+  // Security: shield with lock core
+  security:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <path d="M32 4 L56 14 L56 34 C56 48 44 58 32 62 C20 58 8 48 8 34 L8 14 Z"
+      fill="#F43F5E" fill-opacity="0.14" stroke="#F43F5E" stroke-width="2.4" stroke-linejoin="round"/>
+    <rect x="24" y="30" width="16" height="14" rx="3" fill="none" stroke="#F43F5E" stroke-width="2.2" opacity="0.9"/>
+    <path d="M26 30 L26 25 C26 20 38 20 38 25 L38 30" fill="none" stroke="#F43F5E" stroke-width="2.2" opacity="0.9"/>
+    <circle cx="32" cy="37" r="2.5" fill="#F43F5E"/>
+  </svg>`),
+
+  // Performance: speedometer / p99 gauge + flame
+  performance:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <path d="M10 44 A24 24 0 1 1 54 44" fill="none" stroke="#34D399" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+    <path d="M10 44 A24 24 0 0 1 49 22" fill="none" stroke="#34D399" stroke-width="3.5" stroke-linecap="round" opacity="0.9"/>
+    <line x1="32" y1="44" x2="46" y2="22" stroke="#34D399" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="32" cy="44" r="4" fill="#34D399"/>
+    <path d="M32 9 C28 16 22 20 26 28 C28 24 31 23 32 18 C33 23 36 25 37 30 C40 22 36 15 32 9 Z" fill="#34D399" opacity="0.65"/>
+  </svg>`),
+
+  // DB Migration: flyway arrow through schema layers
+  dbMigration:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="14" rx="22" ry="8" fill="none" stroke="#3B82F6" stroke-width="2.2"/>
+    <line x1="10" y1="14" x2="10" y2="30" stroke="#3B82F6" stroke-width="2.2" opacity="0.6"/>
+    <line x1="54" y1="14" x2="54" y2="30" stroke="#3B82F6" stroke-width="2.2" opacity="0.6"/>
+    <ellipse cx="32" cy="30" rx="22" ry="8" fill="none" stroke="#3B82F6" stroke-width="2" opacity="0.72"/>
+    <line x1="10" y1="30" x2="10" y2="46" stroke="#3B82F6" stroke-width="1.8" opacity="0.4"/>
+    <line x1="54" y1="30" x2="54" y2="46" stroke="#3B82F6" stroke-width="1.8" opacity="0.4"/>
+    <ellipse cx="32" cy="46" rx="22" ry="8" fill="none" stroke="#3B82F6" stroke-width="1.6" opacity="0.42"/>
+    <line x1="32" y1="20" x2="32" y2="54" stroke="#3B82F6" stroke-width="2.5" stroke-dasharray="3,3" opacity="0.9"/>
+    <polygon points="27,50 32,58 37,50" fill="#3B82F6" opacity="0.9"/>
+  </svg>`),
+
+  // CI/CD: pipeline stages connected by arrows
+  cicd:svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect x="2" y="24" width="12" height="16" rx="3" fill="none" stroke="#A78BFA" stroke-width="2"/>
+    <rect x="20" y="24" width="12" height="16" rx="3" fill="none" stroke="#A78BFA" stroke-width="2" opacity="0.78"/>
+    <rect x="38" y="24" width="12" height="16" rx="3" fill="none" stroke="#A78BFA" stroke-width="2" opacity="0.56"/>
+    <rect x="51" y="12" width="11" height="40" rx="3" fill="#A78BFA" fill-opacity="0.2" stroke="#A78BFA" stroke-width="2" opacity="0.7"/>
+    <line x1="14" y1="32" x2="20" y2="32" stroke="#A78BFA" stroke-width="2"/>
+    <polygon points="18,29 22,32 18,35" fill="#A78BFA"/>
+    <line x1="32" y1="32" x2="38" y2="32" stroke="#A78BFA" stroke-width="2" opacity="0.78"/>
+    <polygon points="36,29 40,32 36,35" fill="#A78BFA" opacity="0.78"/>
+    <line x1="50" y1="32" x2="51" y2="32" stroke="#A78BFA" stroke-width="2" opacity="0.56"/>
+    <circle cx="8" cy="32" r="3" fill="#A78BFA" opacity="0.6"/>
+    <circle cx="26" cy="32" r="3" fill="#A78BFA" opacity="0.5"/>
+    <circle cx="44" cy="32" r="3" fill="#A78BFA" opacity="0.4"/>
+  </svg>`),
 };
+
 const DI='https://cdn.jsdelivr.net/gh/devicons/devicon/icons';
-const IC={java:`${DI}/java/java-original.svg`,spring:`${DI}/spring/spring-original.svg`,mysql:`${DI}/mysql/mysql-original.svg`,redis:`${DI}/redis/redis-original.svg`,postgres:`${DI}/postgresql/postgresql-original.svg`,kafka:`${DI}/apachekafka/apachekafka-original.svg`,rabbitmq:`${DI}/rabbitmq/rabbitmq-original.svg`,docker:`${DI}/docker/docker-original.svg`,git:`${DI}/git/git-original.svg`,linux:`${DI}/linux/linux-original.svg`,k8s:`${DI}/kubernetes/kubernetes-plain.svg`,junit:`${DI}/junit/junit-plain.svg`,elastic:`${DI}/elasticsearch/elasticsearch-original.svg`,grafana:`${DI}/grafana/grafana-original.svg`};
-
-const C={java:'#F59E0B',spring:'#22C55E',architecture:'#06B6D4',messaging:'#F97316',database:'#3B82F6',infra:'#A78BFA',center:'#CBD5E1'};
-
-const CATS={
-  java:         {label:'Java Core',              angle:270,fan:80,repoFactor:0.28},
-  spring:       {label:'Spring Ecosystem',       angle:330,fan:88,repoFactor:0.32},
-  architecture: {label:'Architecture & Design',  angle:30, fan:65,repoFactor:0.24},
-  messaging:    {label:'Messaging & Streaming',  angle:90, fan:42,repoFactor:0.20},
-  database:     {label:'Database',               angle:150,fan:68,repoFactor:0.24},
-  infra:        {label:'Infrastructure & DevOps',angle:210,fan:75,repoFactor:0.26},
+const IC={
+  java:`${DI}/java/java-original.svg`,
+  spring:`${DI}/spring/spring-original.svg`,
+  mysql:`${DI}/mysql/mysql-original.svg`,
+  redis:`${DI}/redis/redis-original.svg`,
+  postgres:`${DI}/postgresql/postgresql-original.svg`,
+  kafka:`${DI}/apachekafka/apachekafka-original.svg`,
+  rabbitmq:`${DI}/rabbitmq/rabbitmq-original.svg`,
+  docker:`${DI}/docker/docker-original.svg`,
+  git:`${DI}/git/git-original.svg`,
+  linux:`${DI}/linux/linux-original.svg`,
+  k8s:`${DI}/kubernetes/kubernetes-plain.svg`,
+  junit:`${DI}/junit/junit-plain.svg`,
+  elastic:`${DI}/elasticsearch/elasticsearch-original.svg`,
+  grafana:`${DI}/grafana/grafana-original.svg`,
 };
 
+// ═══════════════════════════════════════════════
+//  COLORS
+// ═══════════════════════════════════════════════
+const C={
+  java:'#F59E0B',
+  spring:'#22C55E',
+  architecture:'#06B6D4',
+  api:'#38BDF8',
+  messaging:'#F97316',
+  security:'#F43F5E',
+  database:'#3B82F6',
+  performance:'#34D399',
+  infra:'#A78BFA',
+  center:'#CBD5E1',
+};
+
+// ═══════════════════════════════════════════════
+//  CATEGORIES — 9 hubs, 40° spacing
+//  java:270  spring:310  architecture:350
+//  api:30    messaging:70  security:110
+//  database:150  performance:190  infra:230
+// ═══════════════════════════════════════════════
+// Proportional hub placement: sector width ∝ repo count
+// fan = sector×0.86, repoFactor tuned so inter-repo arc ≥ 57px (NODE_R*2 + 25px margin)
+const CATS={
+  java:        {label:'Java Core',               angle:270, fan: 52, repoFactor:0.82},
+  spring:      {label:'Spring Ecosystem',        angle:330, fan: 60, repoFactor:0.82},
+  architecture:{label:'Architecture & Design',   angle: 23, fan: 37, repoFactor:0.82},
+  infra:       {label:'Infrastructure & DevOps', angle: 71, fan: 52, repoFactor:0.95},
+  database:    {label:'Database',                angle:124, fan: 45, repoFactor:0.82},
+  messaging:   {label:'Messaging & Streaming',   angle:162, fan: 20, repoFactor:0.22},
+  api:         {label:'API & Communication',     angle:187, fan:  0, repoFactor:0.19},
+  security:    {label:'Security Engineering',    angle:209, fan:  0, repoFactor:0.19},
+  performance: {label:'Performance & Quality',   angle:231, fan:  0, repoFactor:0.19},
+};
+
+// ═══════════════════════════════════════════════
+//  REPOS
+// ═══════════════════════════════════════════════
 const REPOS=[
-  {id:'obj',cat:'java',       short:'Objects',        label:'오브젝트 (Objects)',           icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/object',                    desc:'코드로 이해하는 객체지향 설계, 역할·책임·협력 원칙 — OOP 사고방식의 시작점'},
-  {id:'mja',cat:'java',       short:'Modern Java',    label:'Modern Java in Action',       icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/modern-java-in-action',      desc:'자바 8+ 함수형 프로그래밍, 스트림 API, 람다, CompletableFuture'},
-  {id:'api',cat:'java',       short:'Java API Ref',   label:'Java API Reference',          icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/java-api-reference',         desc:'자바 표준 라이브러리 원리, 실무 패턴, 성능 최적화, 실행 가능한 예제'},
-  {id:'pat',cat:'java',       short:'Design Patterns',label:'Java Design Patterns',        icon:IC.java,               docs:null,url:'https://github.com/iq-dev-lab/java-design-patterns',       desc:'47가지 디자인 패턴 — GoF·아키텍처·동시성 패턴, 실전 Before/After'},
-  {id:'tst',cat:'java',       short:'Unit Testing',   label:'Unit Testing',                icon:IC.junit,              docs:null,url:'https://github.com/iq-dev-lab/unit-testing',               desc:'단위 테스트 설계 원칙, Mocking 전략(Stub/Spy/Fake), 안티패턴 분석'},
-  {id:'con',cat:'java',       short:'Concurrency',    label:'Java Concurrency Deep Dive',  icon:IC.java,               docs:40,  url:'https://github.com/iq-dev-lab/java-concurrency-deep-dive',  desc:'JVM 락 메커니즘 완전 분해 — Mark Word·Biased/Thin/Fat Lock, CAS·AQS, 가상 스레드'},
-  {id:'jvm',cat:'java',       short:'JVM Deep Dive',  label:'JVM Deep Dive',               icon:IC.java,               docs:69,  url:'https://github.com/iq-dev-lab/jvm-deep-dive',               desc:'JVM 내부 구조 완전 해부 — 클래스 로딩·GC·JIT·메모리 모델, CPU 레벨 성능 분석'},
-  {id:'sc', cat:'spring',     short:'Spring Core',    label:'Spring Core Deep Dive',       icon:IC.spring,             docs:51,  url:'https://github.com/iq-dev-lab/spring-core-deep-dive',       desc:'IoC 컨테이너 완전 해부, DI 내부 동작, Bean 생명주기, AOP·Proxy 구현 원리'},
-  {id:'sd', cat:'spring',     short:'Spring Data&Tx', label:'Spring Data & Transaction',   icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-data-transaction',     desc:'Spring Data JPA 내부 구조, 트랜잭션 관리, Hibernate 통합, 쿼리 성능 튜닝'},
-  {id:'sb', cat:'spring',     short:'Spring Boot',    label:'Spring Boot Internals',       icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-boot-internals',       desc:'Auto-configuration 내부 동작, 스타트업 프로세스, Property 관리, Actuator'},
-  {id:'sm', cat:'spring',     short:'Spring MVC',     label:'Spring MVC Deep Dive',        icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-mvc-deep-dive',        desc:'DispatcherServlet 완전 분해, HandlerMapping·Adapter, ArgumentResolver, Async'},
-  {id:'ss', cat:'spring',     short:'Spring Security',label:'Spring Security Deep Dive',   icon:IC.spring,             docs:45,  url:'https://github.com/iq-dev-lab/spring-security-deep-dive',  desc:'FilterChainProxy 완전 분해, JWT·SecurityContext, OAuth2 Authorization Code Flow'},
-  {id:'sba',cat:'spring',     short:'Spring Batch',   label:'Spring Batch Deep Dive',      icon:IC.spring,             docs:35,  url:'https://github.com/iq-dev-lab/spring-batch-deep-dive',      desc:'ChunkOrientedTasklet 완전 분해, ItemReader·Processor·Writer 체인, Partitioning'},
-  {id:'scl',cat:'spring',     short:'Spring Cloud',   label:'Spring Cloud Deep Dive',      icon:IC.spring,             docs:40,  url:'https://github.com/iq-dev-lab/spring-cloud-deep-dive',      desc:'분산 시스템 내부 — Config Server, Eureka, Gateway, Circuit Breaker, 분산 추적'},
-  {id:'swf',cat:'spring',     short:'WebFlux',        label:'Spring WebFlux Deep Dive',    icon:IC.spring,             docs:40,  url:'https://github.com/iq-dev-lab/spring-webflux-deep-dive',    desc:'Reactive Streams 스펙 완전 분해, Project Reactor, Netty 아키텍처·epoll, R2DBC'},
-  {id:'arch',cat:'architecture',short:'Arch Patterns',label:'Architecture Patterns',       icon:IC_CUSTOM.archPatterns,docs:39,  url:'https://github.com/iq-dev-lab/architecture-patterns-deep-dive',desc:'Layered → Hexagonal → Clean Architecture 완전 분해, DIP 기반 개선, Uncle Bob 4원칙'},
-  {id:'ddd', cat:'architecture',short:'DDD',          label:'DDD Deep Dive',               icon:IC_CUSTOM.ddd,         docs:43,  url:'https://github.com/iq-dev-lab/ddd-deep-dive',               desc:'Bounded Context 전략 설계, Aggregate·Value Object·Domain Event, 도메인 테스트 전략'},
-  {id:'cqrs',cat:'architecture',short:'CQRS + ES',    label:'CQRS + Event Sourcing',       icon:IC_CUSTOM.cqrs,        docs:40,  url:'https://github.com/iq-dev-lab/cqrs-event-sourcing-deep-dive',desc:'CQS 원칙·비동기 Command 완전 분해, Event Store·Projection 원리, 이벤트 소싱 통합'},
-  {id:'msa', cat:'architecture',short:'MSA',          label:'MSA Deep Dive',               icon:IC_CUSTOM.msa,         docs:41,  url:'https://github.com/iq-dev-lab/msa-deep-dive',               desc:'모놀리스→MSA 전환 원칙, Saga 분산 트랜잭션·보상 패턴, 서비스 경계 설계, Circuit Breaker'},
-  {id:'sys', cat:'architecture',short:'System Design',label:'System Design Deep Dive',     icon:IC_CUSTOM.sysdesign,   docs:42,  url:'https://github.com/iq-dev-lab/system-design-deep-dive',     desc:'대규모 시스템 설계 원칙, URL 단축기·YouTube·검색 자동완성·라이브 스트리밍 케이스 스터디'},
-  {id:'kf', cat:'messaging',  short:'Kafka',          label:'Kafka Deep Dive',             icon:IC.kafka,              docs:37,  url:'https://github.com/iq-dev-lab/kafka-deep-dive',             desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리',darkIcon:true},
-  {id:'rmq',cat:'messaging',  short:'RabbitMQ',       label:'RabbitMQ Deep Dive',          icon:IC.rabbitmq,           docs:38,  url:'https://github.com/iq-dev-lab/rabbitmq-deep-dive',          desc:'Exchange 라우팅 완전 분해, Quorum Queue 클러스터링, Outbox + Publisher Confirm 보장 패턴'},
-  {id:'dbi',cat:'database',   short:'DB Internals',   label:'Database Internals',          icon:IC_CUSTOM.dbInternals, docs:40,  url:'https://github.com/iq-dev-lab/database-internals',          desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read'},
-  {id:'my', cat:'database',   short:'MySQL',          label:'MySQL Deep Dive',             icon:IC.mysql,              docs:38,  url:'https://github.com/iq-dev-lab/mysql-deep-dive',             desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석'},
-  {id:'pg', cat:'database',   short:'PostgreSQL',     label:'PostgreSQL Deep Dive',        icon:IC.postgres,           docs:41,  url:'https://github.com/iq-dev-lab/postgresql-deep-dive',        desc:'MVCC·Dead Tuple·VACUUM 완전 분해, Serializable Snapshot Isolation, Index-Only Scan'},
-  {id:'re', cat:'database',   short:'Redis',          label:'Redis Deep Dive',             icon:IC.redis,              docs:37,  url:'https://github.com/iq-dev-lab/redis-deep-dive',             desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream'},
-  {id:'es', cat:'database',   short:'Elasticsearch',  label:'Elasticsearch Deep Dive',     icon:IC.elastic,            docs:38,  url:'https://github.com/iq-dev-lab/elasticsearch-deep-dive',     desc:'Lucene 역색인 완전 분해, BM25 점수 계산, Shard·Replica 분산 구조, 실전 성능 튜닝'},
-  {id:'lnx',cat:'infra',      short:'Linux',          label:'Linux for Backend',           icon:IC.linux,              docs:38,  url:'https://github.com/iq-dev-lab/linux-for-backend-deep-dive', desc:'커널 I/O·메모리 관리 완전 분해, 프로세스·스레드·스케줄러, 시스템콜·epoll·시그널'},
-  {id:'net',cat:'infra',      short:'Network',        label:'Network Deep Dive',           icon:IC_CUSTOM.network,     docs:37,  url:'https://github.com/iq-dev-lab/network-deep-dive',           desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking'},
-  {id:'git',cat:'infra',      short:'Git',            label:'Git In-Depth',                icon:IC.git,                docs:null,url:'https://github.com/iq-dev-lab/git-in-depth',               desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅'},
-  {id:'doc',cat:'infra',      short:'Docker',         label:'Docker Deep Dive',            icon:IC.docker,             docs:null,url:'https://github.com/iq-dev-lab/docker-deep-dive',           desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅'},
-  {id:'k8s',cat:'infra',      short:'Kubernetes',     label:'Kubernetes Deep Dive',        icon:IC.k8s,                docs:40,  url:'https://github.com/iq-dev-lab/kubernetes-deep-dive',        desc:'Control Plane 완전 분해 — etcd·API Server·Scheduler·kubelet, Pod 스케줄링·HPA'},
-  {id:'obs',cat:'infra',      short:'Observability',  label:'Observability Deep Dive',     icon:IC.grafana,            docs:35,  url:'https://github.com/iq-dev-lab/observability-deep-dive',     desc:'Java Agent 바이트코드 조작 원리, Prometheus 수집, OpenTelemetry 분산 추적, 장애 진단'},
+  // ── Java Core ──────────────────────────────────────────────────────────
+
+  {id:'obj', cat:'java',        short:'Objects',         label:'오브젝트 (Objects)',           icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/object',                      desc:'코드로 이해하는 객체지향 설계, 역할·책임·협력 원칙 — OOP 사고방식의 시작점'},
+  {id:'mja', cat:'java',        short:'Modern Java',     label:'Modern Java in Action',       icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/modern-java-in-action',        desc:'자바 8+ 함수형 프로그래밍, 스트림 API, 람다, CompletableFuture'},
+  {id:'api2',cat:'java',        short:'Java API Ref',    label:'Java API Reference',          icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/java-api-reference',           desc:'자바 표준 라이브러리 원리, 실무 패턴, 성능 최적화, 실행 가능한 예제'},
+  {id:'pat', cat:'java',        short:'Design Patterns', label:'Java Design Patterns',        icon:IC.java,                docs:null, url:'https://github.com/iq-dev-lab/java-design-patterns',         desc:'47가지 디자인 패턴 — GoF·아키텍처·동시성 패턴, 실전 Before/After'},
+  {id:'tst', cat:'java',        short:'Unit Testing',    label:'Unit Testing',                icon:IC.junit,               docs:null, url:'https://github.com/iq-dev-lab/unit-testing',                 desc:'단위 테스트 설계 원칙, Mocking 전략(Stub/Spy/Fake), 안티패턴 분석'},
+  {id:'con', cat:'java',        short:'Concurrency',     label:'Java Concurrency Deep Dive',  icon:IC.java,                docs:40,   url:'https://github.com/iq-dev-lab/java-concurrency-deep-dive',   desc:'JVM 락 메커니즘 완전 분해 — Mark Word·Biased/Thin/Fat Lock, CAS·AQS, 가상 스레드'},
+  {id:'jvm', cat:'java',        short:'JVM Deep Dive',   label:'JVM Deep Dive',               icon:IC.java,                docs:69,   url:'https://github.com/iq-dev-lab/jvm-deep-dive',                desc:'JVM 내부 구조 완전 해부 — 클래스 로딩·GC·JIT·메모리 모델, CPU 레벨 성능 분석'},
+  // ── Spring Ecosystem ───────────────────────────────────────────────────
+
+  {id:'sc',  cat:'spring',      short:'Spring Core',     label:'Spring Core Deep Dive',       icon:IC.spring,              docs:51,   url:'https://github.com/iq-dev-lab/spring-core-deep-dive',        desc:'IoC 컨테이너 완전 해부, DI 내부 동작, Bean 생명주기, AOP·Proxy 구현 원리'},
+  {id:'sb',  cat:'spring',      short:'Spring Boot',     label:'Spring Boot Internals',       icon:IC.spring,              docs:45,   url:'https://github.com/iq-dev-lab/spring-boot-internals',        desc:'Auto-configuration 내부 동작, 스타트업 프로세스, Property 관리, Actuator'},
+  {id:'sm',  cat:'spring',      short:'Spring MVC',      label:'Spring MVC Deep Dive',        icon:IC.spring,              docs:45,   url:'https://github.com/iq-dev-lab/spring-mvc-deep-dive',         desc:'DispatcherServlet 완전 분해, HandlerMapping·Adapter, ArgumentResolver, Async'},
+  {id:'sd',  cat:'spring',      short:'Spring Data&Tx',  label:'Spring Data & Transaction',   icon:IC.spring,              docs:45,   url:'https://github.com/iq-dev-lab/spring-data-transaction',      desc:'Spring Data JPA 내부 구조, 트랜잭션 관리, Hibernate 통합, 쿼리 성능 튜닝'},
+  {id:'ss',  cat:'spring',      short:'Spring Security', label:'Spring Security Deep Dive',   icon:IC.spring,              docs:45,   url:'https://github.com/iq-dev-lab/spring-security-deep-dive',   desc:'FilterChainProxy 완전 분해, JWT·SecurityContext, OAuth2 Authorization Code Flow'},
+  {id:'sba', cat:'spring',      short:'Spring Batch',    label:'Spring Batch Deep Dive',      icon:IC.spring,              docs:35,   url:'https://github.com/iq-dev-lab/spring-batch-deep-dive',       desc:'ChunkOrientedTasklet 완전 분해, ItemReader·Processor·Writer 체인, Partitioning'},
+  {id:'scl', cat:'spring',      short:'Spring Cloud',    label:'Spring Cloud Deep Dive',      icon:IC.spring,              docs:40,   url:'https://github.com/iq-dev-lab/spring-cloud-deep-dive',       desc:'분산 시스템 내부 — Config Server, Eureka, Gateway, Circuit Breaker, 분산 추적'},
+  {id:'swf', cat:'spring',      short:'WebFlux',         label:'Spring WebFlux Deep Dive',    icon:IC.spring,              docs:40,   url:'https://github.com/iq-dev-lab/spring-webflux-deep-dive',     desc:'Reactive Streams 스펙 완전 분해, Project Reactor, Netty 아키텍처·epoll, R2DBC'},
+  // ── Architecture & Design ──────────────────────────────────────────────
+
+  {id:'arch',cat:'architecture', short:'Arch Patterns',  label:'Architecture Patterns',       icon:IC_CUSTOM.archPatterns, docs:39,   url:'https://github.com/iq-dev-lab/architecture-patterns-deep-dive',desc:'Layered → Hexagonal → Clean Architecture 완전 분해, DIP 기반 개선, Uncle Bob 4원칙'},
+  {id:'ddd', cat:'architecture', short:'DDD',            label:'DDD Deep Dive',               icon:IC_CUSTOM.ddd,          docs:43,   url:'https://github.com/iq-dev-lab/ddd-deep-dive',                desc:'Bounded Context 전략 설계, Aggregate·Value Object·Domain Event, 도메인 테스트 전략'},
+  {id:'cqrs',cat:'architecture', short:'CQRS + ES',      label:'CQRS + Event Sourcing',       icon:IC_CUSTOM.cqrs,         docs:40,   url:'https://github.com/iq-dev-lab/cqrs-event-sourcing-deep-dive', desc:'CQS 원칙·비동기 Command 완전 분해, Event Store·Projection 원리, 이벤트 소싱 통합'},
+  {id:'msa', cat:'architecture', short:'MSA',            label:'MSA Deep Dive',               icon:IC_CUSTOM.msa,          docs:41,   url:'https://github.com/iq-dev-lab/msa-deep-dive',                desc:'모놀리스→MSA 전환 원칙, Saga 분산 트랜잭션·보상 패턴, 서비스 경계 설계, Circuit Breaker'},
+  {id:'sys', cat:'architecture', short:'System Design',  label:'System Design Deep Dive',     icon:IC_CUSTOM.sysdesign,    docs:42,   url:'https://github.com/iq-dev-lab/system-design-deep-dive',      desc:'대규모 시스템 설계 원칙, URL 단축기·YouTube·검색 자동완성·라이브 스트리밍 케이스 스터디'},
+  // ── Infrastructure & DevOps ────────────────────────────────────────────
+
+  {id:'lnx', cat:'infra',        short:'Linux',           label:'Linux for Backend',           icon:IC.linux,               docs:38,   url:'https://github.com/iq-dev-lab/linux-for-backend-deep-dive',  desc:'커널 I/O·메모리 관리 완전 분해, 프로세스·스레드·스케줄러, 시스템콜·epoll·시그널'},
+  {id:'net', cat:'infra',        short:'Network',         label:'Network Deep Dive',           icon:IC_CUSTOM.network,      docs:37,   url:'https://github.com/iq-dev-lab/network-deep-dive',            desc:'TCP 3-Way Handshake·TIME_WAIT, TLS 1.3 핸드쉐이크, HTTP/2 멀티플렉싱·HOL Blocking'},
+  {id:'git', cat:'infra',        short:'Git',             label:'Git In-Depth',                icon:IC.git,                 docs:null, url:'https://github.com/iq-dev-lab/git-in-depth',                 desc:'Git 내부 구조(Object Model), 복잡한 충돌 해결, Rebase 심화, 실전 트러블슈팅'},
+  {id:'doc', cat:'infra',        short:'Docker',          label:'Docker Deep Dive',            icon:IC.docker,              docs:null, url:'https://github.com/iq-dev-lab/docker-deep-dive',             desc:'Namespaces·Cgroups·UnionFS, 이미지 최적화, 네트워킹·보안 원리, 실전 트러블슈팅'},
+  {id:'k8s', cat:'infra',        short:'Kubernetes',      label:'Kubernetes Deep Dive',        icon:IC.k8s,                 docs:40,   url:'https://github.com/iq-dev-lab/kubernetes-deep-dive',         desc:'Control Plane 완전 분해 — etcd·API Server·Scheduler·kubelet, Pod 스케줄링·HPA'},
+  {id:'cicd',cat:'infra',        short:'CI/CD Pipeline',  label:'CI/CD Pipeline Deep Dive',    icon:IC_CUSTOM.cicd,         docs:40,   url:'https://github.com/iq-dev-lab/cicd-deep-dive',               desc:'GitHub Actions Runner 격리·Job 스케줄링 완전 분해, Docker 레이어 캐시 원리, ArgoCD Reconciliation Loop, 카나리 배포'},
+  {id:'obs', cat:'infra',        short:'Observability',   label:'Observability Deep Dive',     icon:IC.grafana,             docs:35,   url:'https://github.com/iq-dev-lab/observability-deep-dive',      desc:'Java Agent 바이트코드 조작 원리, Prometheus 수집, OpenTelemetry 분산 추적, 장애 진단'},
+  // ── Database ───────────────────────────────────────────────────────────
+
+  {id:'dbi', cat:'database',     short:'DB Internals',    label:'Database Internals',          icon:IC_CUSTOM.dbInternals,  docs:40,   url:'https://github.com/iq-dev-lab/database-internals',           desc:'InnoDB Buffer Pool, B-Tree 내부 구조, MVCC·Undo Log, Gap Lock·Phantom Read'},
+  {id:'my',  cat:'database',     short:'MySQL',           label:'MySQL Deep Dive',             icon:IC.mysql,               docs:38,   url:'https://github.com/iq-dev-lab/mysql-deep-dive',              desc:'실행계획 분석·튜닝, 파티션 프루닝, Binary Log 포맷, Replication Lag 원인 분석'},
+  {id:'pg',  cat:'database',     short:'PostgreSQL',      label:'PostgreSQL Deep Dive',        icon:IC.postgres,            docs:41,   url:'https://github.com/iq-dev-lab/postgresql-deep-dive',         desc:'MVCC·Dead Tuple·VACUUM 완전 분해, Serializable Snapshot Isolation, Index-Only Scan'},
+  {id:'re',  cat:'database',     short:'Redis',           label:'Redis Deep Dive',             icon:IC.redis,               docs:37,   url:'https://github.com/iq-dev-lab/redis-deep-dive',              desc:'내부 자료구조 완전 분해, RDB·AOF 지속성, 클러스터·센티넬, Pub/Sub vs Stream'},
+  {id:'es',  cat:'database',     short:'Elasticsearch',   label:'Elasticsearch Deep Dive',     icon:IC.elastic,             docs:38,   url:'https://github.com/iq-dev-lab/elasticsearch-deep-dive',      desc:'Lucene 역색인 완전 분해, BM25 점수 계산, Shard·Replica 분산 구조, 실전 성능 튜닝'},
+  {id:'dbm', cat:'database',     short:'DB Migration',    label:'DB Migration Deep Dive',      icon:IC_CUSTOM.dbMigration,  docs:38,   url:'https://github.com/iq-dev-lab/db-migration-deep-dive',       desc:'Flyway 체크섬 감지·적용 원리, InnoDB Online DDL Lock 조건, Expand-Contract 무중단 컬럼 변경, Forward-Only 전략'},
+  // ── Messaging & Streaming ──────────────────────────────────────────────
+
+  {id:'kf',  cat:'messaging',    short:'Kafka',           label:'Kafka Deep Dive',             icon:IC.kafka,               docs:37,   url:'https://github.com/iq-dev-lab/kafka-deep-dive',              desc:'파티션·ISR·리밸런싱 완전 분해, acks·min.insync.replicas, Exactly-Once 구현 원리', darkIcon:true},
+  {id:'rmq', cat:'messaging',    short:'RabbitMQ',        label:'RabbitMQ Deep Dive',          icon:IC.rabbitmq,            docs:38,   url:'https://github.com/iq-dev-lab/rabbitmq-deep-dive',           desc:'Exchange 라우팅 완전 분해, Quorum Queue 클러스터링, Outbox + Publisher Confirm 보장 패턴'},
+  // ── API & Communication ────────────────────────────────────────────────
+
+  {id:'grpc',cat:'api',          short:'gRPC + Protobuf', label:'gRPC + Protocol Buffers',    icon:IC_CUSTOM.grpc,         docs:38,   url:'https://github.com/iq-dev-lab/grpc-deep-dive',               desc:'Protobuf TLV 인코딩·필드 번호 계약 완전 분해, HTTP/2 스트림 멀티플렉싱, Interceptor 체인, Deadline 전파'},
+  // ── Security Engineering ───────────────────────────────────────────────
+
+  {id:'sec', cat:'security',     short:'Security Eng.',   label:'Security Engineering',       icon:IC_CUSTOM.security,     docs:41,   url:'https://github.com/iq-dev-lab/security-engineering-deep-dive', desc:'STRIDE 위협 모델링, SQL Injection·XSS·CSRF 근본 원인, JWT alg:none 공격, SSRF → 자격증명 탈취, OWASP Top 10'},
+  // ── Performance & Quality ──────────────────────────────────────────────
+
+  {id:'perf',cat:'performance',  short:'Perf. Testing',   label:'Performance Testing',        icon:IC_CUSTOM.performance,  docs:39,   url:'https://github.com/iq-dev-lab/performance-testing-deep-dive', desc:'k6 부하 테스트·p95/p99 정량 측정, USE 방법론 병목 특정, async-profiler Flame Graph, Connection Pool 공식, GC Stop-The-World'},
 ];
 
 // ═══════════════════════════════════════════════
@@ -207,7 +349,7 @@ const REPOS=[
 // ═══════════════════════════════════════════════
 const W=innerWidth,H=innerHeight,CX=W/2,CY=H/2;
 const MIN_DIM=Math.min(W,H);
-const HUB_D=MIN_DIM*0.30;
+const HUB_D=MIN_DIM*0.35;
 const NODE_R=16;
 function rad(d){return d*Math.PI/180;}
 
@@ -234,36 +376,31 @@ function buildGraph(){
   return{nodes,links,byId};
 }
 const{nodes,links,byId}=buildGraph();
-const repoNodes=nodes.filter(n=>n.type==='repo');
 
 // ═══════════════════════════════════════════════
 //  SVG SETUP
 // ═══════════════════════════════════════════════
 const svg=d3.select('#graph').attr('viewBox',`0 0 ${W} ${H}`);
 const root=svg.append('g');
-const zoom=d3.zoom().scaleExtent([.15,4.0]).on('zoom',e=>root.attr('transform',e.transform));
+const zoom=d3.zoom().scaleExtent([.12,4.0]).on('zoom',e=>root.attr('transform',e.transform));
 svg.call(zoom);
-svg.call(zoom.transform,d3.zoomIdentity.translate(W*(1-.52)/2,H*(1-.52)/2).scale(.52));
+// slightly more zoomed out for 9 hubs
+svg.call(zoom.transform,d3.zoomIdentity.translate(W*(1-.22)/2,H*(1-.22)/2).scale(.22));
 
 // defs
 const defs=svg.append('defs');
-
-// center glow gradient
 const rg=defs.append('radialGradient').attr('id','cglow').attr('cx','50%').attr('cy','50%').attr('r','50%');
 rg.append('stop').attr('offset','0%').attr('stop-color','#CBD5E1').attr('stop-opacity',.14);
 rg.append('stop').attr('offset','100%').attr('stop-color','#CBD5E1').attr('stop-opacity',0);
 
-// cursor aurora gradient
 const ag=defs.append('radialGradient').attr('id','aurora-grad').attr('cx','50%').attr('cy','50%').attr('r','50%');
 ag.append('stop').attr('offset','0%').attr('stop-color','#ffffff').attr('stop-opacity',.04);
 ag.append('stop').attr('offset','60%').attr('stop-color','#ffffff').attr('stop-opacity',.015);
 ag.append('stop').attr('offset','100%').attr('stop-color','#ffffff').attr('stop-opacity',0);
 
-// aurora blur filter
 const af=defs.append('filter').attr('id','aurora-blur').attr('x','-50%').attr('y','-50%').attr('width','200%').attr('height','200%');
 af.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','22');
 
-// per-category glow filters
 Object.keys(C).forEach(k=>{
   const f=defs.append('filter').attr('id',`gl-${k}`).attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
   f.append('feGaussianBlur').attr('in','SourceGraphic').attr('stdDeviation','7').attr('result','blur');
@@ -272,46 +409,32 @@ Object.keys(C).forEach(k=>{
   m.append('feMergeNode').attr('in','SourceGraphic');
 });
 
-// clip paths
 REPOS.forEach(r=>{defs.append('clipPath').attr('id','clip-'+r.id).append('circle').attr('r',NODE_R-2);});
 
-// ═══════════════════════════════════════════════
-//  CURSOR AURORA (follows mouse in root space)
-// ═══════════════════════════════════════════════
+// ── Aurora ──────────────────────────────────────
 const auroraGroup=root.insert('g','*');
 const aurora=auroraGroup.append('circle')
   .attr('r',120).attr('fill','url(#aurora-grad)')
   .attr('filter','url(#aurora-blur)')
   .attr('opacity',0).attr('pointer-events','none');
 
-// ═══════════════════════════════════════════════
-//  EDGES (base layer)
-// ═══════════════════════════════════════════════
+// ── Edges ───────────────────────────────────────
 const baseEdgeG=root.append('g');
 baseEdgeG.selectAll('line').data(links).join('line')
-  .attr('class','base-edge')
   .attr('x1',d=>byId[d.s].x).attr('y1',d=>byId[d.s].y)
   .attr('x2',d=>byId[d.t].x).attr('y2',d=>byId[d.t].y)
   .attr('stroke',d=>{const n=byId[d.t];return n.cat?C[n.cat]:C.center;})
   .attr('stroke-width',d=>d.hub?1.4:1.0)
-  .attr('stroke-opacity',d=>d.hub?.48:.38)
+  .attr('stroke-opacity',d=>d.hub?.45:.35)
   .attr('stroke-dasharray',d=>d.hub?'none':'5,4')
   .style('opacity',0).transition().duration(1200).delay(600).style('opacity',1);
 
-// animated flow edge layer (shown on hover)
 const flowEdgeG=root.append('g').attr('pointer-events','none');
 
-// ═══════════════════════════════════════════════
-//  NODES
-// ═══════════════════════════════════════════════
+// ── Node groups ─────────────────────────────────
 const nodeG=root.append('g').selectAll('g').data(nodes).join('g')
   .attr('transform',d=>`translate(${d.x},${d.y})`);
 
-// Store node group refs for proximity effects
-const nodeGMap={};
-nodeG.each(function(d){nodeGMap[d.id||d.type+d.cat]=this;});
-
-// ripple layer (top)
 const rippleG=root.append('g').attr('pointer-events','none');
 
 nodeG.each(function(d){
@@ -330,13 +453,10 @@ nodeG.each(function(d){
 
   // ── HUB ─────────────────────────────────────
   } else if(d.type==='hub'){
-    // outer pulse ring (expands outward continuously)
     g.append('circle').attr('class','hub-pulse-ring').attr('r',27)
       .attr('fill','none').attr('stroke',col)
       .attr('stroke-width',1.2).attr('stroke-opacity',0)
       .attr('pointer-events','none');
-
-    // dual orbit ellipses (simulate 3-D ring)
     const dur1=(9+Math.random()*6).toFixed(1)+'s';
     const dur2=(14+Math.random()*8).toFixed(1)+'s';
     g.append('ellipse').attr('class','hub-orbit-a').attr('rx',36).attr('ry',11)
@@ -347,14 +467,10 @@ nodeG.each(function(d){
       .attr('fill','none').attr('stroke',col).attr('stroke-width',.6)
       .attr('stroke-opacity',.18).attr('stroke-dasharray','2,7')
       .style('--od2',dur2).attr('pointer-events','none');
-
-    // main hub circle
     g.append('circle').attr('r',27).attr('fill',col+'16')
       .attr('stroke',col).attr('stroke-opacity',.6).attr('stroke-width',1.4)
       .attr('filter',`url(#gl-${gid})`);
-
-    // label
-    const shorts={java:'Java',spring:'Spring',architecture:'Arch',messaging:'Messaging',database:'Database',infra:'Infra'};
+    const shorts={java:'Java',spring:'Spring',architecture:'Arch',api:'API',messaging:'Messaging',security:'Security',database:'Database',performance:'Perf',infra:'Infra'};
     g.append('text').attr('y',44).attr('text-anchor','middle')
       .attr('font-family','JetBrains Mono,monospace').attr('font-size','9.5px')
       .attr('letter-spacing','1.5px').attr('fill',col).attr('opacity',.72)
@@ -363,28 +479,18 @@ nodeG.each(function(d){
   // ── REPO NODE ────────────────────────────────
   } else {
     const r=NODE_R;
-
-    // proximity glow ring (inner) — always present, toggled by proximity
     g.append('circle').attr('class','prox-ring').attr('r',r+7)
       .attr('fill','none').attr('stroke',col)
       .attr('stroke-width',1.5).attr('stroke-opacity',0)
       .attr('pointer-events','none');
-
-    // hover ring (outer) — shown on hover
     g.append('circle').attr('class','hover-ring').attr('r',r+14)
       .attr('fill','none').attr('stroke',col)
       .attr('stroke-width',1).attr('stroke-opacity',0)
       .attr('pointer-events','none');
-
-    // main body
-    const body=g.append('circle').attr('class','node-body').attr('r',r)
+    g.append('circle').attr('class','node-body').attr('r',r)
       .attr('fill',col+'22').attr('stroke',col)
       .attr('stroke-opacity',.55).attr('stroke-width',1.3);
-
-    // dark-icon bg
     if(d.darkIcon) g.append('circle').attr('r',r-2).attr('fill','rgba(255,255,255,.9)').attr('clip-path',`url(#clip-${d.id})`);
-
-    // icon
     if(d.icon){
       g.append('image').attr('href',d.icon)
         .attr('x',-(r-2)).attr('y',-(r-2))
@@ -392,8 +498,6 @@ nodeG.each(function(d){
         .attr('clip-path',`url(#clip-${d.id})`)
         .attr('opacity',.65).attr('preserveAspectRatio','xMidYMid meet');
     }
-
-    // label pushed outward
     const hub=byId['hub-'+d.cat];
     const dx=d.x-hub.x,dy=d.y-hub.y,len=Math.sqrt(dx*dx+dy*dy)||1;
     const nx=dx/len,ny=dy/len;
@@ -403,8 +507,6 @@ nodeG.each(function(d){
       .attr('text-anchor',anchor)
       .attr('font-family','JetBrains Mono,monospace').attr('font-size','9px')
       .attr('fill',col).attr('opacity',.72).text(d.short);
-
-    // interactions
     g.style('cursor','pointer')
       .on('mouseenter',function(e,nd){ onNodeEnter(e,nd,g); showTT(e,nd); })
       .on('mousemove',moveTT)
@@ -413,10 +515,10 @@ nodeG.each(function(d){
   }
 });
 
-nodeG.style('opacity',0).transition().duration(800).delay((d,i)=>300+i*22).style('opacity',1);
+nodeG.style('opacity',0).transition().duration(800).delay((d,i)=>300+i*18).style('opacity',1);
 
 // ═══════════════════════════════════════════════
-//  HUB PULSE RING ANIMATION (ambient breathing)
+//  HUB PULSE
 // ═══════════════════════════════════════════════
 function animHubPulse(){
   nodeG.filter(d=>d.type==='hub').each(function(d){
@@ -441,48 +543,33 @@ let activeNode=null;
 function onNodeEnter(e,nd,g){
   activeNode=nd.id;
   const col=C[nd.cat];
-
-  // scale entire node group (icon + rings + label all grow together)
   g.transition().duration(160).ease(d3.easeBackOut.overshoot(1.4))
     .attr('transform',`translate(${nd.x},${nd.y}) scale(1.42)`);
-
-  // body glow
   g.select('.node-body').attr('stroke-opacity',1)
     .attr('filter',`url(#gl-${nd.cat})`).attr('fill',col+'44');
   g.select('image').attr('opacity',1);
-
-  // inner ring brightens
   g.select('.prox-ring').attr('stroke-opacity',.8).attr('r',NODE_R+6);
-
-  // outer hover ring
   g.select('.hover-ring').attr('stroke-opacity',.45).attr('r',NODE_R+16);
 
-  // animated flow edges (hub→node + center→hub)
   const hub=byId['hub-'+nd.cat];
   flowEdgeG.selectAll('*').remove();
-  // hub→node
   flowEdgeG.append('line').attr('class','flow-edge')
     .attr('x1',hub.x).attr('y1',hub.y).attr('x2',nd.x).attr('y2',nd.y)
     .attr('stroke',col).attr('stroke-width',2.2).attr('stroke-opacity',.9)
     .attr('stroke-dasharray','8,6');
-  // center→hub
   flowEdgeG.append('line').attr('class','flow-edge')
     .attr('x1',CX).attr('y1',CY).attr('x2',hub.x).attr('y2',hub.y)
     .attr('stroke',col).attr('stroke-width',1.5).attr('stroke-opacity',.5)
     .attr('stroke-dasharray','6,5');
 
-  // dim all other categories
   nodeG.each(function(dd){
     if(dd.type==='repo'&&dd.cat!==nd.cat){
-      d3.select(this).transition().duration(180).style('opacity',.22);
+      d3.select(this).transition().duration(180).style('opacity',.18);
     }
   });
-  // dim legend entries
   document.querySelectorAll('.li').forEach(el=>{
-    el.style.opacity=(el.dataset.cat===nd.cat)?'1':'0.25';
+    el.style.opacity=(el.dataset.cat===nd.cat)?'1':'0.2';
   });
-
-  // highlight own hub
   const hubSel=nodeG.filter(d=>d.id==='hub-'+nd.cat);
   hubSel.select('circle:last-of-type').attr('stroke-opacity',1).attr('filter',`url(#gl-${nd.cat})`);
 }
@@ -490,30 +577,22 @@ function onNodeEnter(e,nd,g){
 function onNodeLeave(nd,g){
   activeNode=null;
   const col=C[nd.cat];
-
-  // restore scale
   g.transition().duration(200).ease(d3.easeCubicOut)
     .attr('transform',`translate(${nd.x},${nd.y}) scale(1)`);
-
   g.select('.node-body').attr('r',NODE_R).attr('stroke-opacity',.55)
     .attr('filter',null).attr('fill',col+'22');
   g.select('image').attr('opacity',.65);
   g.select('.prox-ring').attr('stroke-opacity',0).attr('r',NODE_R+7);
   g.select('.hover-ring').attr('stroke-opacity',0).attr('r',NODE_R+14);
   flowEdgeG.selectAll('*').remove();
-
-  // restore all
   nodeG.each(function(dd){
     if(dd.type==='repo') d3.select(this).transition().duration(300).style('opacity',1);
   });
   document.querySelectorAll('.li').forEach(el=>el.style.opacity='1');
-
-  // restore hub
   const hubSel=nodeG.filter(d=>d.id==='hub-'+nd.cat);
   hubSel.select('circle:last-of-type').attr('stroke-opacity',.6).attr('filter',`url(#gl-${nd.cat})`);
 }
 
-// ── Click ripple ──────────────────────────────
 function spawnRipple(nd){
   const col=C[nd.cat];
   for(let i=0;i<3;i++){
@@ -531,7 +610,7 @@ function spawnRipple(nd){
 }
 
 // ═══════════════════════════════════════════════
-//  PROXIMITY GLOW (distance-based, runs on RAF)
+//  PROXIMITY GLOW
 // ═══════════════════════════════════════════════
 let mouseRootX=CX,mouseRootY=CY;
 
@@ -539,7 +618,6 @@ svg.on('mousemove.prox',function(e){
   const tr=d3.zoomTransform(svg.node());
   mouseRootX=(e.clientX-tr.x)/tr.k;
   mouseRootY=(e.clientY-tr.y)/tr.k;
-  // aurora follows
   aurora.attr('cx',mouseRootX).attr('cy',mouseRootY).attr('opacity',1);
 });
 svg.on('mouseleave.prox',()=>{ aurora.attr('opacity',0); });
@@ -547,7 +625,7 @@ svg.on('mouseleave.prox',()=>{ aurora.attr('opacity',0); });
 function proxLoop(){
   if(!activeNode){
     const tr=d3.zoomTransform(svg.node());
-    const PROX=200/tr.k; // proximity radius in root space, scales with zoom
+    const PROX=200/tr.k;
     nodeG.each(function(d){
       if(d.type!=='repo') return;
       const dx=d.x-mouseRootX,dy=d.y-mouseRootY;
@@ -556,8 +634,7 @@ function proxLoop(){
         const t=Math.pow(1-dist/PROX,2);
         const col=C[d.cat];
         d3.select(this).select('.node-body')
-          .attr('stroke-opacity',.55+t*.45)
-          .attr('r',NODE_R+t*2.5)
+          .attr('stroke-opacity',.55+t*.45).attr('r',NODE_R+t*2.5)
           .attr('filter',t>.35?`url(#gl-${d.cat})`:null);
         d3.select(this).select('.prox-ring')
           .attr('stroke-opacity',t*.55).attr('r',NODE_R+7+t*4);
@@ -573,23 +650,20 @@ function proxLoop(){
 }
 
 // ═══════════════════════════════════════════════
-//  3-D PARALLAX TILT
+//  3-D TILT
 // ═══════════════════════════════════════════════
 let tRx=0,tRy=0,cRx=0,cRy=0;
 const graphInner=document.getElementById('graph-inner');
-
 document.addEventListener('mousemove',e=>{
-  tRx=(e.clientY/H-.5)*5;   // ±2.5°
+  tRx=(e.clientY/H-.5)*5;
   tRy=(e.clientX/W-.5)*-5;
 });
 document.addEventListener('mouseleave',()=>{tRx=0;tRy=0;});
-
 function tiltLoop(){
   cRx+=(tRx-cRx)*.055;
   cRy+=(tRy-cRy)*.055;
   if(Math.abs(cRx)>.005||Math.abs(cRy)>.005){
-    graphInner.style.transform=
-      `rotateX(${cRx.toFixed(3)}deg) rotateY(${cRy.toFixed(3)}deg)`;
+    graphInner.style.transform=`rotateX(${cRx.toFixed(3)}deg) rotateY(${cRy.toFixed(3)}deg)`;
   }
   requestAnimationFrame(tiltLoop);
 }
@@ -617,7 +691,7 @@ function moveTT(e){
 function hideTT(){tt.style.opacity='0';}
 
 // ═══════════════════════════════════════════════
-//  START ALL ANIMATIONS + INTRO
+//  BOOT
 // ═══════════════════════════════════════════════
 setTimeout(()=>{
   animHubPulse();
