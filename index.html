@@ -65,9 +65,198 @@
     #tt-link{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-decoration:none;transition:opacity .15s}
     #tt-link:hover{opacity:.7}
 
-    #intro{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .9s}
-    .intro-title{font-family:'Bebas Neue',sans-serif;font-size:80px;letter-spacing:14px;color:var(--center);text-align:center}
-    .intro-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:3px;text-align:center;margin-top:8px}
+    /* ── INTRO SCREEN ───────────────────────────────── */
+    #intro{
+      position:fixed;inset:0;z-index:100;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--bg);
+      transition:opacity 1.2s cubic-bezier(0.4,0,0.2,1);
+      overflow:hidden;
+    }
+    #intro-canvas{position:absolute;inset:0;pointer-events:none;}
+
+    .intro-inner{
+      position:relative;z-index:2;
+      display:flex;flex-direction:column;align-items:center;
+      gap:0;
+    }
+
+    /* 행성 오브 */
+    .intro-orb{
+      width:120px;height:120px;border-radius:50%;
+      background:radial-gradient(circle at 38% 36%,
+        rgba(203,213,225,0.18) 0%,
+        rgba(203,213,225,0.04) 40%,
+        transparent 70%);
+      border:1px solid rgba(203,213,225,0.2);
+      box-shadow:
+        0 0 60px rgba(203,213,225,0.08),
+        0 0 120px rgba(203,213,225,0.04),
+        inset 0 0 40px rgba(203,213,225,0.06);
+      margin-bottom:32px;
+      opacity:0;
+      animation:intro-orb-in 1.2s cubic-bezier(0.4,0,0.2,1) 0.2s forwards;
+      position:relative;
+    }
+    .intro-orb::before{
+      content:'';position:absolute;inset:-20px;border-radius:50%;
+      border:1px solid rgba(203,213,225,0.06);
+      animation:intro-ring-spin 8s linear infinite;
+    }
+    .intro-orb::after{
+      content:'';position:absolute;inset:-38px;border-radius:50%;
+      border:1px solid rgba(203,213,225,0.03);
+      animation:intro-ring-spin 14s linear infinite reverse;
+    }
+
+    /* 타이틀 */
+    .intro-title{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:88px;letter-spacing:18px;
+      color:transparent;
+      background:linear-gradient(180deg,#e2e8f0 0%,#94a3b8 60%,#475569 100%);
+      -webkit-background-clip:text;background-clip:text;
+      text-align:center;line-height:1;
+      opacity:0;
+      animation:intro-title-in 1.0s cubic-bezier(0.4,0,0.2,1) 0.7s forwards;
+    }
+
+    /* 글리치 효과용 */
+    .intro-title-wrap{position:relative;display:inline-block;}
+    .intro-title-wrap::before,
+    .intro-title-wrap::after{
+      content:attr(data-text);
+      position:absolute;inset:0;
+      font-family:'Bebas Neue',sans-serif;
+      font-size:88px;letter-spacing:18px;
+      text-align:center;line-height:1;
+      opacity:0;
+    }
+    .intro-title-wrap::before{
+      color:#38bdf8;
+      animation:intro-glitch-1 4s infinite 2s;
+      clip-path:polygon(0 0,100% 0,100% 35%,0 35%);
+    }
+    .intro-title-wrap::after{
+      color:#f43f5e;
+      animation:intro-glitch-2 4s infinite 2.08s;
+      clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);
+    }
+
+    /* 서브텍스트 */
+    .intro-sub{
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;color:var(--muted);
+      letter-spacing:4px;text-align:center;
+      margin-top:16px;
+      opacity:0;
+      animation:intro-sub-in 0.8s ease 1.3s forwards;
+    }
+
+    /* 스캔라인 */
+    .intro-scan{
+      position:absolute;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(203,213,225,0.15),transparent);
+      animation:intro-scan-line 2s ease-in-out 0.5s;
+      opacity:0;
+    }
+
+    /* 코너 브래킷 */
+    .intro-bracket{
+      position:absolute;width:24px;height:24px;
+      border-color:rgba(203,213,225,0.25);border-style:solid;
+      opacity:0;
+      animation:intro-bracket-in 0.6s ease 0.3s forwards;
+    }
+    .intro-bracket.tl{top:20%;left:20%;border-width:1px 0 0 1px;}
+    .intro-bracket.tr{top:20%;right:20%;border-width:1px 1px 0 0;}
+    .intro-bracket.bl{bottom:20%;left:20%;border-width:0 0 1px 1px;}
+    .intro-bracket.br{bottom:20%;right:20%;border-width:0 1px 1px 0;}
+
+    /* 좌측 스펙 텍스트 */
+    .intro-spec{
+      position:absolute;left:10%;top:50%;transform:translateY(-50%);
+      font-family:'JetBrains Mono',monospace;font-size:9px;
+      color:rgba(203,213,225,0.15);letter-spacing:2px;
+      line-height:2.2;text-align:left;
+      opacity:0;
+      animation:intro-spec-in 0.8s ease 1.5s forwards;
+    }
+    .intro-spec-r{
+      position:absolute;right:10%;top:50%;transform:translateY(-50%);
+      font-family:'JetBrains Mono',monospace;font-size:9px;
+      color:rgba(203,213,225,0.15);letter-spacing:2px;
+      line-height:2.2;text-align:right;
+      opacity:0;
+      animation:intro-spec-in 0.8s ease 1.6s forwards;
+    }
+
+    /* 하단 로딩 바 */
+    .intro-loader{
+      position:absolute;bottom:14%;left:50%;transform:translateX(-50%);
+      width:180px;
+      opacity:0;
+      animation:intro-spec-in 0.5s ease 1.8s forwards;
+    }
+    .intro-loader-track{
+      height:1px;background:rgba(203,213,225,0.1);border-radius:1px;
+      overflow:hidden;
+    }
+    .intro-loader-fill{
+      height:100%;width:0;
+      background:linear-gradient(90deg,transparent,rgba(203,213,225,0.5));
+      animation:intro-load 1.2s cubic-bezier(0.4,0,0.2,1) 1.9s forwards;
+    }
+    .intro-loader-label{
+      font-family:'JetBrains Mono',monospace;font-size:8px;
+      color:rgba(203,213,225,0.2);letter-spacing:2px;
+      text-align:center;margin-top:6px;
+    }
+
+    /* ── 키프레임 ── */
+    @keyframes intro-orb-in{
+      from{opacity:0;transform:scale(0.7);}
+      to{opacity:1;transform:scale(1);}
+    }
+    @keyframes intro-ring-spin{to{transform:rotate(360deg);}}
+    @keyframes intro-title-in{
+      from{opacity:0;transform:translateY(12px);}
+      to{opacity:1;transform:translateY(0);}
+    }
+    @keyframes intro-sub-in{
+      from{opacity:0;letter-spacing:8px;}
+      to{opacity:1;letter-spacing:4px;}
+    }
+    @keyframes intro-bracket-in{
+      from{opacity:0;width:8px;height:8px;}
+      to{opacity:1;width:24px;height:24px;}
+    }
+    @keyframes intro-scan-line{
+      0%{top:-2%;opacity:0;}
+      10%{opacity:1;}
+      90%{opacity:1;}
+      100%{top:102%;opacity:0;}
+    }
+    @keyframes intro-glitch-1{
+      0%,92%,100%{opacity:0;transform:none;}
+      93%{opacity:.7;transform:translate(-3px,1px);}
+      95%{opacity:.5;transform:translate(3px,-1px);}
+      97%{opacity:.7;transform:translate(-2px,0);}
+      99%{opacity:0;}
+    }
+    @keyframes intro-glitch-2{
+      0%,92%,100%{opacity:0;transform:none;}
+      93%{opacity:.6;transform:translate(3px,-1px);}
+      95%{opacity:.4;transform:translate(-3px,1px);}
+      97%{opacity:.6;transform:translate(2px,0);}
+      99%{opacity:0;}
+    }
+    @keyframes intro-spec-in{
+      from{opacity:0;}to{opacity:1;}
+    }
+    @keyframes intro-load{
+      from{width:0;}to{width:100%;}
+    }
   
     /* ═══════════════════════════════════════════════
        ROADMAP BUTTON
@@ -278,7 +467,53 @@
   </style>
 </head>
 <body>
-<div id="intro"><div><div class="intro-title">IQ DEV LAB</div><div class="intro-sub">I QUESTION — LOADING</div></div></div>
+<div id="intro">
+  <canvas id="intro-canvas"></canvas>
+
+  <!-- 코너 브래킷 -->
+  <div class="intro-bracket tl"></div>
+  <div class="intro-bracket tr"></div>
+  <div class="intro-bracket bl"></div>
+  <div class="intro-bracket br"></div>
+
+  <!-- 스캔라인 -->
+  <div class="intro-scan"></div>
+
+  <!-- 좌측 스펙 -->
+  <div class="intro-spec">
+    SYSTEM // IQ-LAB-v2<br>
+    DOMAIN // BACKEND<br>
+    STACK &nbsp;// JAVA · SPRING<br>
+    REPOS &nbsp;// 38 INDEXED<br>
+    DOCS &nbsp;&nbsp;// 1,200+
+  </div>
+
+  <!-- 우측 스펙 -->
+  <div class="intro-spec-r">
+    EXPLORE<br>
+    ANALYZE<br>
+    PRACTICE<br>
+    DOCUMENT<br>
+    REPEAT
+  </div>
+
+  <!-- 메인 콘텐츠 -->
+  <div class="intro-inner">
+    <div class="intro-orb"></div>
+    <div class="intro-title-wrap" data-text="IQ DEV LAB">
+      <div class="intro-title">IQ DEV LAB</div>
+    </div>
+    <div class="intro-sub">I &nbsp;QUESTION &nbsp;— &nbsp;DEEP DIVE INTO EVERYTHING</div>
+  </div>
+
+  <!-- 로딩 바 -->
+  <div class="intro-loader">
+    <div class="intro-loader-track">
+      <div class="intro-loader-fill"></div>
+    </div>
+    <div class="intro-loader-label">INITIALIZING UNIVERSE</div>
+  </div>
+</div></div>
 <canvas id="stars"></canvas>
 
 <header>
@@ -934,14 +1169,94 @@ function hideTT(){tt.style.opacity='0';}
 // ═══════════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════════
+// ── INTRO CANVAS: 파티클 + 웜홀 링 ─────────────────────────────────────
+(function(){
+  const ic = document.getElementById('intro-canvas');
+  if(!ic) return;
+  const ctx = ic.getContext('2d');
+  let W, H, particles=[], rings=[];
+  let raf;
+
+  function resize(){
+    W = ic.width  = innerWidth;
+    H = ic.height = innerHeight;
+  }
+
+  function spawnParticles(){
+    particles = Array.from({length:180}, ()=>({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.4+0.2,
+      a: Math.random()*0.6+0.05,
+      da:(Math.random()-0.5)*0.004,
+      vx:(Math.random()-0.5)*0.15,
+      vy:(Math.random()-0.5)*0.15,
+    }));
+    // 중심에서 바깥으로 퍼지는 링
+    rings = Array.from({length:5}, (_,i)=>({
+      r: 40+i*80, maxR: 420+i*60,
+      a: 0.5-i*0.08, speed: 0.6+i*0.2,
+    }));
+  }
+
+  function drawFrame(){
+    ctx.clearRect(0,0,W,H);
+    const cx=W/2, cy=H/2;
+
+    // 링
+    rings.forEach(ring=>{
+      ctx.beginPath();
+      ctx.arc(cx, cy, ring.r, 0, Math.PI*2);
+      ctx.strokeStyle=`rgba(203,213,225,${ring.a.toFixed(3)})`;
+      ctx.lineWidth=0.5;
+      ctx.stroke();
+      ring.r += ring.speed;
+      ring.a *= 0.985;
+      if(ring.r > ring.maxR) ring.a=0;
+    });
+
+    // 중심 글로우
+    const grd = ctx.createRadialGradient(cx,cy,0,cx,cy,220);
+    grd.addColorStop(0,'rgba(203,213,225,0.05)');
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;
+    ctx.beginPath();ctx.arc(cx,cy,220,0,Math.PI*2);ctx.fill();
+
+    // 스타 파티클
+    particles.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${Math.max(0.02,Math.min(0.7,p.a)).toFixed(2)})`;
+      ctx.fill();
+      p.a+=p.da; if(p.a>0.7||p.a<0.02)p.da*=-1;
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    });
+    raf = requestAnimationFrame(drawFrame);
+  }
+
+  resize();
+  spawnParticles();
+  drawFrame();
+  addEventListener('resize', resize);
+
+  // 페이드아웃 시 캔버스도 정리
+  window._stopIntroCanvas = ()=>{ cancelAnimationFrame(raf); };
+})();
+
+// ── BOOT ─────────────────────────────────────────────────────────────────
 setTimeout(()=>{
   animHubPulse();
   proxLoop();
   tiltLoop();
-  const intro=document.getElementById('intro');
-  intro.style.opacity='0';
-  setTimeout(()=>intro.remove(),900);
-},700);
+  const intro = document.getElementById('intro');
+  // 로딩 바가 끝난 후 (2.3s) 페이드아웃
+  const delay = 600;
+  setTimeout(()=>{
+    if(window._stopIntroCanvas) window._stopIntroCanvas();
+    intro.style.opacity='0';
+    setTimeout(()=>intro.remove(), 1200);
+  }, delay);
+}, 1800);
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  ROADMAP PANEL
