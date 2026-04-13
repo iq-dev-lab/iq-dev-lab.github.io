@@ -22,7 +22,7 @@
     /* ── 3-D tilt wrapper ── */
     #gw{position:fixed;inset:0;top:70px;z-index:1;perspective:1100px;perspective-origin:50% 50%}
     #graph-inner{width:100%;height:100%;transform-style:preserve-3d;will-change:transform;transition:transform .08s linear}
-    #graph{width:100%;height:100%;cursor:grab;display:block}
+    #graph{width:100%;height:100%;cursor:grab;display:block;touch-action:none;}
     #graph:active{cursor:grabbing}
 
     /* ── Hub orbit ring animation ── */
@@ -464,6 +464,21 @@
     }
     .rm-tip-icon{flex-shrink:0;margin-top:1px;}
 
+  
+      .h-stats     { gap: 12px; }
+      .stat-n      { font-size: 18px; }
+      #legend      { display: none; }  /* 극소형 화면엔 레전드 숨김 */
+    }
+
+  
+    /* ── Mobile: minimal overrides only ─────────────────────────────── */
+    @media (max-width: 768px) {
+      .h-desc { display: none; }          /* 설명 텍스트 줄바꿈 방지 */
+      #hint   { display: none; }          /* scroll·zoom·drag 안내 숨김 */
+
+      /* 로드맵 패널: 모바일 전체 너비 */
+      #rm-panel { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -987,7 +1002,8 @@ nodeG.each(function(d){
       .on('mouseenter',function(e,nd){ onNodeEnter(e,nd,g); showTT(e,nd); })
       .on('mousemove',moveTT)
       .on('mouseleave',function(e,nd){ onNodeLeave(nd,g); hideTT(); })
-      .on('click',(e,nd)=>{ spawnRipple(nd); if(nd.url)window.open(nd.url,'_blank'); });
+      .on('click',(e,nd)=>{ spawnRipple(nd); if(nd.url)window.open(nd.url,'_blank'); })
+      ;
   }
 });
 
@@ -1152,6 +1168,7 @@ svg.on('mousemove.prox',function(e){
   aurora.attr('cx',mouseRootX).attr('cy',mouseRootY).attr('opacity',1);
 });
 svg.on('mouseleave.prox',()=>{ aurora.attr('opacity',0); });
+
 
 function proxLoop(){
   if(!activeNode && !rmOpen){
