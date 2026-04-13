@@ -271,15 +271,17 @@ const C={
 // Proportional hub placement: sector width ∝ repo count
 // fan = sector×0.86, repoFactor tuned so inter-repo arc ≥ 57px (NODE_R*2 + 25px margin)
 const CATS={
-  java:        {label:'Java Core',               angle:270, fan: 52, repoFactor:0.82},
-  spring:      {label:'Spring Ecosystem',        angle:330, fan: 60, repoFactor:0.82},
-  architecture:{label:'Architecture & Design',   angle: 23, fan: 37, repoFactor:0.82},
-  infra:       {label:'Infrastructure & DevOps', angle: 71, fan: 52, repoFactor:0.95},
-  database:    {label:'Database',                angle:124, fan: 45, repoFactor:0.82},
-  messaging:   {label:'Messaging & Streaming',   angle:162, fan: 20, repoFactor:0.22},
-  api:         {label:'API & Communication',     angle:187, fan:  0, repoFactor:0.19},
-  security:    {label:'Security Engineering',    angle:209, fan:  0, repoFactor:0.19},
-  performance: {label:'Performance & Quality',   angle:231, fan:  0, repoFactor:0.19},
+  // Large categories: HUB_D_LARGE=380, sector-proportional angles (java=300°, clockwise)
+  java:        {label:'Java Core',               angle:300, sector:68,  hubR:'large'},
+  spring:      {label:'Spring Ecosystem',        angle: 15, sector:82,  hubR:'large'},
+  architecture:{label:'Architecture & Design',   angle: 81, sector:50,  hubR:'large'},
+  infra:       {label:'Infrastructure & DevOps', angle:140, sector:68,  hubR:'large'},
+  database:    {label:'Database',                angle:204, sector:60,  hubR:'large'},
+  // Small categories: HUB_D_SMALL=220, 22° spacing in remaining arc
+  messaging:   {label:'Messaging & Streaming',   angle:219, sector:14,  hubR:'small'},
+  api:         {label:'API & Communication',     angle:241, sector: 7,  hubR:'small'},
+  security:    {label:'Security Engineering',    angle:263, sector: 7,  hubR:'small'},
+  performance: {label:'Performance & Quality',   angle:285, sector: 4,  hubR:'small'},
 };
 
 // ═══════════════════════════════════════════════
@@ -347,9 +349,9 @@ const REPOS=[
 // ═══════════════════════════════════════════════
 //  LAYOUT
 // ═══════════════════════════════════════════════
-const W=innerWidth,H=innerHeight,CX=W/2,CY=H/2;
+const W=3200,H=2400,CX=W/2,CY=H/2;
 const MIN_DIM=Math.min(W,H);
-const HUB_D=MIN_DIM*0.35;
+const HUB_D=330;
 const NODE_R=16;
 function rad(d){return d*Math.PI/180;}
 
@@ -357,18 +359,43 @@ function buildGraph(){
   const nodes=[],links=[],byId={};
   const cn={id:'center',type:'center',x:CX,y:CY};
   nodes.push(cn);byId['center']=cn;
+
+  const HUB_D_LARGE = 380;   // large categories
+  const HUB_D_SMALL = 220;   // small categories (messaging/api/security/perf)
+  const REPO_R_MIN  = 480;   // closest repo (entry level)
+  const REPO_R_MAX  = 660;   // farthest repo (advanced)
+  const FAN_RATIO   = 0.90;
+
   Object.entries(CATS).forEach(([cat,meta])=>{
-    const hr=rad(meta.angle),hx=CX+HUB_D*Math.cos(hr),hy=CY+HUB_D*Math.sin(hr);
+    const hubD = meta.hubR==='small' ? HUB_D_SMALL : HUB_D_LARGE;
+    const hr=rad(meta.angle), hx=CX+hubD*Math.cos(hr), hy=CY+hubD*Math.sin(hr);
     const hId='hub-'+cat;
     const hub={id:hId,type:'hub',cat,label:meta.label,x:hx,y:hy};
     nodes.push(hub);byId[hId]=hub;
     links.push({s:'center',t:hId,hub:true});
-    const repoDist=MIN_DIM*meta.repoFactor;
-    const reps=REPOS.filter(r=>r.cat===cat),n=reps.length;
+
+    const reps=REPOS.filter(r=>r.cat===cat);
+    const n=reps.length;
+    if(n===0) return;
+
+    const fan     = meta.sector * FAN_RATIO;
+    const fanStep = n>1 ? fan/(n-1) : 0;
+
+    // Small categories: place repo close to hub (no spiral)
+    const repoDistSingle = (REPO_R_MIN+REPO_R_MAX)/2;
+
     reps.forEach((repo,i)=>{
-      const half=(n-1)/2,step=n>1?meta.fan/(n-1):0;
-      const rr=rad(meta.angle+(i-half)*step);
-      const node={...repo,type:'repo',x:hx+repoDist*Math.cos(rr),y:hy+repoDist*Math.sin(rr)};
+      let dist;
+      if(meta.hubR==='small'){
+        dist = repoDistSingle * 0.48; // close to hub
+      } else {
+        // Log-spiral: entry level close, advanced far
+        const t = n>1 ? i/(n-1) : 0.5;
+        dist = REPO_R_MIN * Math.pow(REPO_R_MAX/REPO_R_MIN, t);
+      }
+      const repoAngle = meta.angle - fan/2 + i*fanStep;
+      const rr = rad(repoAngle);
+      const node={...repo,type:'repo',x:hx+dist*Math.cos(rr),y:hy+dist*Math.sin(rr)};
       nodes.push(node);byId[repo.id]=node;
       links.push({s:hId,t:repo.id,hub:false,cat});
     });
@@ -385,7 +412,7 @@ const root=svg.append('g');
 const zoom=d3.zoom().scaleExtent([.12,4.0]).on('zoom',e=>root.attr('transform',e.transform));
 svg.call(zoom);
 // slightly more zoomed out for 9 hubs
-svg.call(zoom.transform,d3.zoomIdentity.translate(W*(1-.22)/2,H*(1-.22)/2).scale(.22));
+setTimeout(()=>{ svg.call(zoom.transform, d3.zoomIdentity.translate(innerWidth/2 - 1570*0.45, (innerHeight+70)/2 - 1141*0.45).scale(0.45)); }, 50);
 
 // defs
 const defs=svg.append('defs');
@@ -470,7 +497,7 @@ nodeG.each(function(d){
     g.append('circle').attr('r',27).attr('fill',col+'16')
       .attr('stroke',col).attr('stroke-opacity',.6).attr('stroke-width',1.4)
       .attr('filter',`url(#gl-${gid})`);
-    const shorts={java:'Java',spring:'Spring',architecture:'Arch',api:'API',messaging:'Messaging',security:'Security',database:'Database',performance:'Perf',infra:'Infra'};
+    const shorts={java:'Java',spring:'Spring',architecture:'Arch',api:'API',messaging:'Msg',security:'Sec',database:'DB',performance:'Perf',infra:'Infra'};
     g.append('text').attr('y',44).attr('text-anchor','middle')
       .attr('font-family','JetBrains Mono,monospace').attr('font-size','9.5px')
       .attr('letter-spacing','1.5px').attr('fill',col).attr('opacity',.72)
