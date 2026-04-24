@@ -589,41 +589,180 @@
 
 <script>
 // ═══════════════════════════════════════════════
-//  STARS + SHOOTING STARS
+//  BACKGROUND — Live Backend
+//  Stars + Shooting stars + Packet pulses +
+//  Horizontal pulse lines + Code keyword drift
 // ═══════════════════════════════════════════════
 (function(){
   const c=document.getElementById('stars'),ctx=c.getContext('2d');
-  let S=[],shoots=[];
+  let S=[],shoots=[],pulses=[],pulseLines=[],drifts=[];
+
+  // 카테고리 9색 (배경용)
+  const CAT_COLS=[[245,158,11],[34,197,94],[59,130,246],[249,115,22],[167,139,250],[6,182,212],[56,189,248],[244,63,94],[52,211,153]];
+
+  // 코드 키워드 풀 (양 끝에서 드리프트)
+  const KEYWORDS=['public class','@Bean','{ }','200 OK','SELECT','async','@Transactional','COMMIT','SIGKILL','epoll','tcp://','ACK','exit 0','null','throws','void','throw','catch','extends','GET /api','POST','PUT','DELETE','synchronized','new','return','static','final','abstract','interface','implements','->','=>','ROLLBACK','INSERT','UPDATE','WHERE','JOIN','INDEX','LOCK','CAS','LRU','TCP','UDP','TLS','JWT','OAuth','CORS','HTTP/2','gRPC','kafka://','redis://','POD','LAYER','FORK','KILL','SIGTERM','PID'];
+
   function resize(){
     c.width=innerWidth;c.height=innerHeight;
+    // Stars (기존)
     S=Array.from({length:220},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.1+.15,a:Math.random()*.5+.08,da:(Math.random()-.5)*.003}));
+
+    // Horizontal pulse lines — 2개 (심박도)
+    pulseLines=[
+      {baseY:c.height*0.3, phase:0,         speed:0.35, nextSpike:Date.now()+3000+Math.random()*3000, spikeActive:false, spikeIntensity:0, dir:1, col:[6,182,212],  op:0.075},
+      {baseY:c.height*0.72,phase:Math.PI,   speed:0.42, nextSpike:Date.now()+5000+Math.random()*3000, spikeActive:false, spikeIntensity:0, dir:1, col:[52,211,153], op:0.055}
+    ];
+
+    // Code keyword drift — 양 끝 15% 영역
+    const mW=c.width*0.15;
+    drifts=Array.from({length:20},()=>{
+      const col=CAT_COLS[Math.floor(Math.random()*CAT_COLS.length)];
+      return{
+        x:Math.random()<0.5?Math.random()*mW:c.width-mW+Math.random()*mW,
+        y:Math.random()*c.height,
+        kw:KEYWORDS[Math.floor(Math.random()*KEYWORDS.length)],
+        speed:Math.random()*0.22+0.05,
+        op:Math.random()*0.05+0.025,
+        size:Math.floor(Math.random()*3)+9,
+        col
+      };
+    });
   }
+
   function addShoot(){
     const angle=Math.random()*0.4+0.1;
     shoots.push({x:Math.random()*c.width,y:Math.random()*c.height*0.5,vx:Math.cos(angle)*14,vy:Math.sin(angle)*14,life:1,tail:[]});
     setTimeout(addShoot, 4000+Math.random()*6000);
   }
+
+  // Packet pulse — 3~6초마다 하나씩 (패킷 브로드캐스트 느낌)
+  function spawnPulse(){
+    const col=CAT_COLS[Math.floor(Math.random()*CAT_COLS.length)];
+    const symbols=['→',':','{}','</>','[]'];
+    pulses.push({
+      x:Math.random()*c.width*0.75+c.width*0.12,
+      y:Math.random()*c.height*0.7+c.height*0.15,
+      r:0,maxR:95+Math.random()*50,life:1,col,
+      sym:Math.random()<0.22?symbols[Math.floor(Math.random()*symbols.length)]:null
+    });
+    setTimeout(spawnPulse, 3500+Math.random()*3000);
+  }
+
   function draw(){
-    ctx.clearRect(0,0,c.width,c.height);
+    const W=c.width,H=c.height,t=Date.now();
+    ctx.clearRect(0,0,W,H);
+
+    // ── Horizontal pulse lines (서버 심박도)
+    pulseLines.forEach(pl=>{
+      if(t>pl.nextSpike&&!pl.spikeActive){
+        pl.spikeActive=true;
+        pl.spikeIntensity=55+Math.random()*45;
+        pl.dir=Math.random()<0.5?1:-1;
+        pl.nextSpike=t+3500+Math.random()*4000;
+        setTimeout(()=>{pl.spikeActive=false;},380);
+      }
+      const[r,g,b]=pl.col;
+      const grad=ctx.createLinearGradient(0,0,W,0);
+      grad.addColorStop(0,`rgba(${r},${g},${b},0)`);
+      grad.addColorStop(0.5,`rgba(${r},${g},${b},${pl.op})`);
+      grad.addColorStop(1,`rgba(${r},${g},${b},0)`);
+      ctx.strokeStyle=grad;ctx.lineWidth=0.9;
+      ctx.beginPath();
+      const scanX=(t*pl.speed*0.09)%W;
+      for(let x=0;x<=W;x+=4){
+        let y=pl.baseY+Math.sin(x*0.007+t*0.0005+pl.phase)*1.8;
+        if(pl.spikeActive){
+          const dx=x-scanX;
+          if(Math.abs(dx)<75){
+            const n=dx/75;
+            y-=Math.exp(-n*n*9)*pl.spikeIntensity*pl.dir;
+          }
+        }
+        if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+      // Spike 중일 때 스캔 포인트
+      if(pl.spikeActive){
+        ctx.beginPath();
+        ctx.arc(scanX,pl.baseY,2.2,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${r},${g},${b},0.55)`;
+        ctx.fill();
+      }
+    });
+
+    // ── Stars (기존)
     S.forEach(s=>{
       ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
       ctx.fillStyle=`rgba(255,255,255,${Math.max(.04,Math.min(.65,s.a)).toFixed(2)})`;
-      ctx.fill();s.a+=s.da;if(s.a>.6||s.a<.05)s.da*=-1;
+      ctx.fill();
+      s.a+=s.da;if(s.a>.6||s.a<.05)s.da*=-1;
     });
+
+    // ── Code keyword drift (양 끝)
+    drifts.forEach(d=>{
+      ctx.font=`${d.size}px JetBrains Mono,monospace`;
+      const[r,g,b]=d.col;
+      ctx.fillStyle=`rgba(${r},${g},${b},${d.op})`;
+      ctx.textAlign='left';
+      ctx.fillText(d.kw,d.x,d.y);
+      d.y+=d.speed;
+      if(d.y>H+20){
+        d.y=-20;
+        d.kw=KEYWORDS[Math.floor(Math.random()*KEYWORDS.length)];
+        d.col=CAT_COLS[Math.floor(Math.random()*CAT_COLS.length)];
+      }
+    });
+
+    // ── Shooting stars (기존)
     shoots.forEach((sh,i)=>{
       sh.tail.push({x:sh.x,y:sh.y});if(sh.tail.length>18)sh.tail.shift();
       sh.x+=sh.vx;sh.y+=sh.vy;sh.life-=0.018;
       if(sh.life<=0||sh.x>c.width+100||sh.y>c.height){shoots.splice(i,1);return;}
-      for(let t=1;t<sh.tail.length;t++){
-        const a=(t/sh.tail.length)*sh.life*0.7;
-        ctx.beginPath();ctx.moveTo(sh.tail[t-1].x,sh.tail[t-1].y);ctx.lineTo(sh.tail[t].x,sh.tail[t].y);
-        ctx.strokeStyle=`rgba(255,255,255,${a.toFixed(2)})`;ctx.lineWidth=1.5*(t/sh.tail.length);ctx.stroke();
+      for(let tt=1;tt<sh.tail.length;tt++){
+        const a=(tt/sh.tail.length)*sh.life*0.7;
+        ctx.beginPath();ctx.moveTo(sh.tail[tt-1].x,sh.tail[tt-1].y);ctx.lineTo(sh.tail[tt].x,sh.tail[tt].y);
+        ctx.strokeStyle=`rgba(255,255,255,${a.toFixed(2)})`;ctx.lineWidth=1.5*(tt/sh.tail.length);ctx.stroke();
       }
     });
+
+    // ── Packet pulses (동심원 3겹)
+    for(let i=pulses.length-1;i>=0;i--){
+      const p=pulses[i];
+      const[r,g,b]=p.col;
+      for(let k=0;k<3;k++){
+        const offset=k*16;
+        const ringR=p.r-offset;
+        if(ringR<=0||ringR>p.maxR)continue;
+        const op=p.life*0.38*(1-k*0.28);
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,ringR,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(${r},${g},${b},${op.toFixed(3)})`;
+        ctx.lineWidth=1.3-k*0.3;
+        ctx.stroke();
+      }
+      // 중심: 심볼 또는 점
+      if(p.sym){
+        ctx.font='11px JetBrains Mono,monospace';
+        ctx.textAlign='center';
+        ctx.fillStyle=`rgba(${r},${g},${b},${(p.life*0.6).toFixed(3)})`;
+        ctx.fillText(p.sym,p.x,p.y+3.5);
+      }else{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,1.8,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${r},${g},${b},${(p.life*0.75).toFixed(3)})`;
+        ctx.fill();
+      }
+      p.r+=2.6;p.life-=0.017;
+      if(p.life<=0||p.r>p.maxR+48)pulses.splice(i,1);
+    }
+
     requestAnimationFrame(draw);
   }
+
   resize();draw();addEventListener('resize',resize);
   setTimeout(addShoot,2000);
+  setTimeout(spawnPulse,2500);
 })();
 
 // ═══════════════════════════════════════════════
