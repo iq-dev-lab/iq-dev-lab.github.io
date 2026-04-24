@@ -1365,8 +1365,8 @@ function proxLoop(){
 let tRx=0,tRy=0,cRx=0,cRy=0;
 const graphInner=document.getElementById('graph-inner');
 document.addEventListener('mousemove',e=>{
-  tRx=(e.clientY/H-.5)*5;
-  tRy=(e.clientX/W-.5)*-5;
+  tRx=(e.clientY/H-.5)*-5;
+  tRy=(e.clientX/W-.5)*5;
 });
 document.addEventListener('mouseleave',()=>{tRx=0;tRy=0;});
 function tiltLoop(){
