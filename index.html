@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IQ Dev Lab</title>
+  <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
@@ -13,15 +14,73 @@
       --java:#F59E0B;--spring:#22C55E;--database:#3B82F6;--messaging:#F97316;
       --infra:#A78BFA;--architecture:#06B6D4;--api:#38BDF8;--security:#F43F5E;
       --performance:#34D399;
-      --center:#CBD5E1;--muted:#4A5568
+      --center:#CBD5E1;--muted:#4A5568;
+      --depth-far-x:0px;--depth-far-y:0px;
+      --depth-near-x:0px;--depth-near-y:0px;
     }
     *{margin:0;padding:0;box-sizing:border-box}
-    html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Noto Sans KR',sans-serif}
+    html,body{
+      width:100%;height:100%;overflow:hidden;
+      background:
+        radial-gradient(ellipse at 50% 42%,#0b111d 0%,#07090f 48%,#04060b 100%);
+      font-family:'Noto Sans KR',sans-serif;
+    }
+    #atmosphere{
+      position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.025),transparent 28%,rgba(0,0,0,.18) 100%);
+    }
+    #atmosphere::before{
+      content:'';position:absolute;inset:-8%;
+      background-image:
+        linear-gradient(rgba(203,213,225,.045) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(203,213,225,.035) 1px,transparent 1px),
+        radial-gradient(ellipse at 50% 44%,rgba(56,189,248,.075),transparent 58%),
+        radial-gradient(ellipse at 50% 56%,rgba(167,139,250,.05),transparent 64%);
+      background-size:96px 96px,96px 96px,100% 100%,100% 100%;
+      -webkit-mask-image:radial-gradient(ellipse at 50% 48%,black 0%,black 54%,transparent 86%);
+      mask-image:radial-gradient(ellipse at 50% 48%,black 0%,black 54%,transparent 86%);
+      transform:translate3d(var(--depth-far-x),var(--depth-far-y),0);
+      transition:transform .12s linear;
+      opacity:.68;
+    }
+    #atmosphere::after{
+      content:'';position:absolute;inset:0;
+      background:
+        repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px),
+        linear-gradient(90deg,transparent,rgba(203,213,225,.04) 50%,transparent);
+      transform:translate3d(var(--depth-near-x),var(--depth-near-y),0);
+      opacity:.42;
+    }
     #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+    #cursor-light{
+      position:fixed;left:0;top:0;width:286px;height:286px;border-radius:50%;
+      z-index:4;pointer-events:none;opacity:0;transform:translate(-50%,-50%);
+      background:
+        radial-gradient(circle,
+          rgba(255,255,255,.18) 0%,
+          rgba(203,213,225,.12) 8%,
+          rgba(56,189,248,.075) 28%,
+          rgba(167,139,250,.035) 46%,
+          transparent 70%);
+      mix-blend-mode:screen;filter:blur(.25px);
+      transition:opacity .14s ease;
+      will-change:left,top,opacity;
+    }
+    #cursor-light::before{
+      content:'';position:absolute;inset:96px;border-radius:50%;
+      border:1px solid rgba(203,213,225,.22);
+      box-shadow:0 0 26px rgba(56,189,248,.16);
+    }
+    #cursor-light::after{
+      content:'';position:absolute;left:50%;top:50%;width:18px;height:18px;
+      border:1px solid rgba(203,213,225,.24);border-radius:50%;
+      transform:translate(-50%,-50%);
+    }
 
-    /* ── 3-D tilt wrapper ── */
+    /* ── Graph wrapper ── */
     #gw{position:fixed;inset:0;top:70px;z-index:1;perspective:1100px;perspective-origin:50% 50%}
-    #graph-inner{width:100%;height:100%;transform-style:preserve-3d;will-change:transform;transition:transform .08s linear}
+    #graph-inner{width:100%;height:100%;transform:translateZ(0)}
     #graph{width:100%;height:100%;cursor:grab;display:block;touch-action:none;}
     #graph:active{cursor:grabbing}
 
@@ -69,43 +128,50 @@
     #intro{
       position:fixed;inset:0;z-index:100;
       display:flex;align-items:center;justify-content:center;
-      background:var(--bg);
+      background:
+        radial-gradient(ellipse at 50% 38%,#0f172a,#07090f 52%,#05070d 100%);
       transition:opacity 1.2s cubic-bezier(0.4,0,0.2,1);
       overflow:hidden;
     }
-    #intro-canvas{position:absolute;inset:0;pointer-events:none;}
+    #intro-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;}
 
     .intro-inner{
       position:relative;z-index:2;
       display:flex;flex-direction:column;align-items:center;
       gap:0;
+      filter:drop-shadow(0 24px 50px rgba(0,0,0,.35));
     }
 
     /* 행성 오브 */
     .intro-orb{
-      width:120px;height:120px;border-radius:50%;
-      background:radial-gradient(circle at 38% 36%,
-        rgba(203,213,225,0.18) 0%,
-        rgba(203,213,225,0.04) 40%,
-        transparent 70%);
+      width:128px;height:128px;border-radius:50%;
+      background:
+        radial-gradient(circle at 36% 34%,rgba(255,255,255,0.2) 0%,rgba(203,213,225,0.08) 31%,transparent 63%),
+        radial-gradient(circle at 66% 68%,rgba(56,189,248,0.12) 0%,transparent 44%),
+        radial-gradient(circle at 50% 50%,rgba(203,213,225,0.035),transparent 70%);
       border:1px solid rgba(203,213,225,0.2);
       box-shadow:
         0 0 60px rgba(203,213,225,0.08),
+        0 0 88px rgba(56,189,248,0.055),
         0 0 120px rgba(203,213,225,0.04),
         inset 0 0 40px rgba(203,213,225,0.06);
       margin-bottom:32px;
       opacity:0;
       animation:intro-orb-in 1.2s cubic-bezier(0.4,0,0.2,1) 0.2s forwards;
       position:relative;
+      isolation:isolate;
     }
     .intro-orb::before{
-      content:'';position:absolute;inset:-20px;border-radius:50%;
-      border:1px solid rgba(203,213,225,0.06);
+      content:'';position:absolute;inset:-22px;border-radius:50%;
+      border:1px solid rgba(203,213,225,0.08);
+      border-left-color:rgba(56,189,248,.22);
+      border-bottom-color:rgba(167,139,250,.12);
       animation:intro-ring-spin 8s linear infinite;
     }
     .intro-orb::after{
-      content:'';position:absolute;inset:-38px;border-radius:50%;
-      border:1px solid rgba(203,213,225,0.03);
+      content:'';position:absolute;inset:-42px;border-radius:50%;
+      border:1px dashed rgba(203,213,225,0.055);
+      border-top-color:rgba(52,211,153,.16);
       animation:intro-ring-spin 14s linear infinite reverse;
     }
 
@@ -118,6 +184,7 @@
       -webkit-background-clip:text;background-clip:text;
       text-align:center;line-height:1;
       opacity:0;
+      text-shadow:0 0 32px rgba(203,213,225,.08);
       animation:intro-title-in 1.0s cubic-bezier(0.4,0,0.2,1) 0.7s forwards;
     }
 
@@ -464,10 +531,17 @@
     }
     .rm-tip-icon{flex-shrink:0;margin-top:1px;}
 
-  
+    @media (max-width: 560px) {
       .h-stats     { gap: 12px; }
       .stat-n      { font-size: 18px; }
       #legend      { display: none; }  /* 극소형 화면엔 레전드 숨김 */
+      .intro-title,
+      .intro-title-wrap::before,
+      .intro-title-wrap::after{font-size:54px;letter-spacing:9px;}
+      .intro-orb{width:104px;height:104px;margin-bottom:24px;}
+      .intro-sub{font-size:9px;letter-spacing:2.5px;}
+      .intro-spec,.intro-spec-r{display:none;}
+      .intro-loader{bottom:11%;}
     }
 
   
@@ -544,7 +618,9 @@
     </div>
     <div class="intro-loader-label">INITIALIZING UNIVERSE</div>
   </div>
-</div></div>
+</div>
+<div id="atmosphere" aria-hidden="true"></div>
+<div id="cursor-light" aria-hidden="true"></div>
 <canvas id="stars"></canvas>
 
 <header>
@@ -1057,8 +1133,77 @@ Object.keys(C).forEach(k=>{
 
 REPOS.forEach(r=>{defs.append('clipPath').attr('id','clip-'+r.id).append('circle').attr('r',NODE_R-2);});
 
+// ── System depth rings ────────────────────────────
+const depthG=root.append('g')
+  .attr('class','system-depth')
+  .attr('pointer-events','none')
+  .attr('opacity',0);
+
+function arcPath(cx,cy,r,a0,a1){
+  const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0);
+  const x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
+  const large=Math.abs(a1-a0)>Math.PI?1:0;
+  return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+
+[136,224,332,480,660,860,1040].forEach((r,i)=>{
+  depthG.append('circle')
+    .attr('cx',CX).attr('cy',CY).attr('r',r)
+    .attr('fill','none')
+    .attr('stroke','#CBD5E1')
+    .attr('stroke-width',i<3?.8:.6)
+    .attr('stroke-opacity',i<3?.08:.045)
+    .attr('stroke-dasharray',i%2?'3,12':'1,18')
+    .attr('vector-effect','non-scaling-stroke');
+});
+
+depthG.append('line')
+  .attr('x1',CX-1080).attr('y1',CY).attr('x2',CX+1080).attr('y2',CY)
+  .attr('stroke','#CBD5E1').attr('stroke-opacity',.045).attr('stroke-width',.7)
+  .attr('stroke-dasharray','8,18').attr('vector-effect','non-scaling-stroke');
+depthG.append('line')
+  .attr('x1',CX).attr('y1',CY-1080).attr('x2',CX).attr('y2',CY+1080)
+  .attr('stroke','#CBD5E1').attr('stroke-opacity',.045).attr('stroke-width',.7)
+  .attr('stroke-dasharray','8,18').attr('vector-effect','non-scaling-stroke');
+
+for(let i=0;i<96;i++){
+  const a=rad(i*3.75);
+  const r0=i%8===0?894:910;
+  const r1=928;
+  depthG.append('line')
+    .attr('x1',CX+r0*Math.cos(a)).attr('y1',CY+r0*Math.sin(a))
+    .attr('x2',CX+r1*Math.cos(a)).attr('y2',CY+r1*Math.sin(a))
+    .attr('stroke','#CBD5E1').attr('stroke-opacity',i%8===0?.12:.045)
+    .attr('stroke-width',i%8===0?.9:.55)
+    .attr('vector-effect','non-scaling-stroke');
+}
+
+Object.entries(CATS).forEach(([cat,meta])=>{
+  const col=C[cat];
+  const a=rad(meta.angle);
+  const spread=rad(Math.max(10,meta.sector*.62));
+  depthG.append('path')
+    .attr('d',arcPath(CX,CY,meta.hubR==='small'?610:760,a-spread/2,a+spread/2))
+    .attr('fill','none')
+    .attr('stroke',col)
+    .attr('stroke-opacity',.16)
+    .attr('stroke-width',1.2)
+    .attr('stroke-linecap','round')
+    .attr('vector-effect','non-scaling-stroke');
+  depthG.append('line')
+    .attr('x1',CX+110*Math.cos(a)).attr('y1',CY+110*Math.sin(a))
+    .attr('x2',CX+930*Math.cos(a)).attr('y2',CY+930*Math.sin(a))
+    .attr('stroke',col)
+    .attr('stroke-opacity',.055)
+    .attr('stroke-width',.75)
+    .attr('stroke-dasharray','7,13')
+    .attr('vector-effect','non-scaling-stroke');
+});
+
+depthG.transition().duration(1400).delay(850).attr('opacity',1);
+
 // ── Aurora ──────────────────────────────────────
-const auroraGroup=root.insert('g','*');
+const auroraGroup=root.append('g');
 const aurora=auroraGroup.append('circle')
   .attr('r',120).attr('fill','url(#aurora-grad)')
   .attr('filter','url(#aurora-blur)')
@@ -1314,21 +1459,59 @@ function spawnRipple(nd){
 // ═══════════════════════════════════════════════
 //  PROXIMITY GLOW
 // ═══════════════════════════════════════════════
-let mouseRootX=CX,mouseRootY=CY;
+const cursorLight=document.getElementById('cursor-light');
+let mouseRootX=CX,mouseRootY=CY,mouseProxRoot=250,mouseAuroraRoot=130;
 
-svg.on('mousemove.prox',function(e){
-  const tr=d3.zoomTransform(svg.node());
-  mouseRootX=(e.clientX-tr.x)/tr.k;
-  mouseRootY=(e.clientY-tr.y)/tr.k;
-  aurora.attr('cx',mouseRootX).attr('cy',mouseRootY).attr('opacity',1);
-});
-svg.on('mouseleave.prox',()=>{ aurora.attr('opacity',0); });
+function screenToRootPoint(clientX,clientY){
+  const svgEl=svg.node();
+  const rootEl=root.node();
+  const ctm=rootEl.getScreenCTM();
+  if(ctm){
+    const pt=svgEl.createSVGPoint();
+    pt.x=clientX;pt.y=clientY;
+    const p=pt.matrixTransform(ctm.inverse());
+    return{x:p.x,y:p.y};
+  }
+  const p=d3.pointer({clientX,clientY},rootEl);
+  return{x:p[0],y:p[1]};
+}
+
+function screenDistanceToRootUnits(clientX,clientY,px){
+  const a=screenToRootPoint(clientX,clientY);
+  const b=screenToRootPoint(clientX+px,clientY);
+  return Math.hypot(b.x-a.x,b.y-a.y)||px;
+}
+
+function showPointerEffects(e){
+  const p=screenToRootPoint(e.clientX,e.clientY);
+  mouseRootX=p.x;
+  mouseRootY=p.y;
+  mouseProxRoot=screenDistanceToRootUnits(e.clientX,e.clientY,245);
+  mouseAuroraRoot=screenDistanceToRootUnits(e.clientX,e.clientY,150);
+  aurora
+    .attr('cx',mouseRootX)
+    .attr('cy',mouseRootY)
+    .attr('r',mouseAuroraRoot)
+    .attr('opacity',rmOpen?0:.95);
+  if(cursorLight){
+    cursorLight.style.left=e.clientX+'px';
+    cursorLight.style.top=e.clientY+'px';
+    cursorLight.style.opacity=rmOpen?'0':'1';
+  }
+}
+
+function hidePointerEffects(){
+  aurora.attr('opacity',0);
+  if(cursorLight) cursorLight.style.opacity='0';
+}
+
+svg.on('pointermove.prox',showPointerEffects);
+svg.on('pointerleave.prox',hidePointerEffects);
 
 
 function proxLoop(){
   if(!activeNode && !rmOpen){
-    const tr=d3.zoomTransform(svg.node());
-    const PROX=260/tr.k;   // 감지 반경 더 넓게
+    const PROX=mouseProxRoot;
     nodeG.each(function(d){
       if(d.type!=='repo') return;
       const dx=d.x-mouseRootX, dy=d.y-mouseRootY;
@@ -1360,21 +1543,23 @@ function proxLoop(){
 }
 
 // ═══════════════════════════════════════════════
-//  3-D TILT
+//  DEPTH PARALLAX
 // ═══════════════════════════════════════════════
 let tRx=0,tRy=0,cRx=0,cRy=0;
 const graphInner=document.getElementById('graph-inner');
 document.addEventListener('mousemove',e=>{
-  tRx=(e.clientY/H-.5)*-5;
-  tRy=(e.clientX/W-.5)*5;
+  tRx=(e.clientY/innerHeight-.5)*-16;
+  tRy=(e.clientX/innerWidth-.5)*16;
 });
 document.addEventListener('mouseleave',()=>{tRx=0;tRy=0;});
 function tiltLoop(){
   cRx+=(tRx-cRx)*.055;
   cRy+=(tRy-cRy)*.055;
-  if(Math.abs(cRx)>.005||Math.abs(cRy)>.005){
-    graphInner.style.transform=`rotateX(${cRx.toFixed(3)}deg) rotateY(${cRy.toFixed(3)}deg)`;
-  }
+  document.documentElement.style.setProperty('--depth-far-x',(cRy*.35).toFixed(2)+'px');
+  document.documentElement.style.setProperty('--depth-far-y',(cRx*.35).toFixed(2)+'px');
+  document.documentElement.style.setProperty('--depth-near-x',(cRy*-.16).toFixed(2)+'px');
+  document.documentElement.style.setProperty('--depth-near-y',(cRx*-.16).toFixed(2)+'px');
+  if(graphInner) graphInner.style.transform='translateZ(0)';
   requestAnimationFrame(tiltLoop);
 }
 
@@ -1409,12 +1594,34 @@ function hideTT(){tt.style.opacity='0';}
   const ic = document.getElementById('intro-canvas');
   if(!ic) return;
   const ctx = ic.getContext('2d');
-  let W, H, particles=[], rings=[];
+  const orbEl = document.querySelector('.intro-orb');
+  let W, H, particles=[], rings=[], focal={x:0,y:0};
   let raf;
 
   function resize(){
-    W = ic.width  = innerWidth;
-    H = ic.height = innerHeight;
+    const dpr=Math.min(devicePixelRatio||1,2);
+    W = innerWidth;
+    H = innerHeight;
+    ic.width  = Math.floor(W*dpr);
+    ic.height = Math.floor(H*dpr);
+    ic.style.width = W+'px';
+    ic.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    updateFocal();
+    const nextMax=Math.min(Math.max(W,H)*0.62,760);
+    rings.forEach((ring,i)=>{ ring.maxR=nextMax+i*14; });
+  }
+
+  function updateFocal(){
+    if(!orbEl){
+      focal={x:W/2,y:H*0.38};
+      return;
+    }
+    const rect=orbEl.getBoundingClientRect();
+    focal={
+      x:rect.left+rect.width/2,
+      y:rect.top+rect.height/2
+    };
   }
 
   function spawnParticles(){
@@ -1426,35 +1633,61 @@ function hideTT(){tt.style.opacity='0';}
       vx:(Math.random()-0.5)*0.15,
       vy:(Math.random()-0.5)*0.15,
     }));
-    // 중심에서 바깥으로 퍼지는 링
-    rings = Array.from({length:5}, (_,i)=>({
-      r: 40+i*80, maxR: 420+i*60,
-      a: 0.5-i*0.08, speed: 0.6+i*0.2,
+    rings = Array.from({length:7}, (_,i)=>({
+      baseR: 46+i*31,
+      r: 46+i*58,
+      maxR: Math.min(Math.max(W,H)*0.62,760)+i*14,
+      baseA: 0.32-i*0.025,
+      a: 0.32-i*0.025,
+      speed: 0.72+i*0.14,
+      hue: i%3,
     }));
   }
 
   function drawFrame(){
     ctx.clearRect(0,0,W,H);
-    const cx=W/2, cy=H/2;
+    updateFocal();
+    const cx=focal.x, cy=focal.y;
 
-    // 링
+    // 중심 글로우
+    const grd = ctx.createRadialGradient(cx,cy,0,cx,cy,260);
+    grd.addColorStop(0,'rgba(203,213,225,0.08)');
+    grd.addColorStop(0.36,'rgba(56,189,248,0.035)');
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;
+    ctx.beginPath();ctx.arc(cx,cy,260,0,Math.PI*2);ctx.fill();
+
+    // 정렬된 웜홀 링
     rings.forEach(ring=>{
       ctx.beginPath();
+      ctx.setLineDash(ring.hue===0?[1,10]:ring.hue===1?[5,16]:[]);
       ctx.arc(cx, cy, ring.r, 0, Math.PI*2);
-      ctx.strokeStyle=`rgba(203,213,225,${ring.a.toFixed(3)})`;
-      ctx.lineWidth=0.5;
+      const tone=ring.hue===0?'203,213,225':ring.hue===1?'56,189,248':'167,139,250';
+      ctx.strokeStyle=`rgba(${tone},${ring.a.toFixed(3)})`;
+      ctx.lineWidth=ring.hue===0?0.7:0.5;
       ctx.stroke();
       ring.r += ring.speed;
       ring.a *= 0.985;
-      if(ring.r > ring.maxR) ring.a=0;
+      if(ring.r > ring.maxR || ring.a<0.012){
+        ring.r = ring.baseR;
+        ring.a = ring.baseA;
+      }
     });
+    ctx.setLineDash([]);
 
-    // 중심 글로우
-    const grd = ctx.createRadialGradient(cx,cy,0,cx,cy,220);
-    grd.addColorStop(0,'rgba(203,213,225,0.05)');
-    grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd;
-    ctx.beginPath();ctx.arc(cx,cy,220,0,Math.PI*2);ctx.fill();
+    // 오브를 감싸는 얇은 3차원 궤도감
+    const t=performance.now()*0.001;
+    ctx.save();
+    ctx.translate(cx,cy);
+    [0,1,2].forEach(i=>{
+      ctx.rotate(t*(i%2?-0.08:0.06)+i*0.72);
+      ctx.beginPath();
+      ctx.ellipse(0,0,170+i*34,44+i*10,0,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(203,213,225,${(0.06-i*0.012).toFixed(3)})`;
+      ctx.lineWidth=0.6;
+      ctx.stroke();
+    });
+    ctx.restore();
 
     // 스타 파티클
     particles.forEach(p=>{
@@ -1798,6 +2031,7 @@ function updateProgress(levelId) {
 // ── 패널 열기/닫기 ─────────────────────────────────────────────────────────
 function openRoadmap() {
   rmOpen = true;
+  hidePointerEffects();
   document.getElementById('rm-panel').classList.add('open');
   document.getElementById('rm-overlay').classList.add('open');
   document.getElementById('rm-toggle').classList.add('active');
